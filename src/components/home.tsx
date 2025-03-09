@@ -2,23 +2,32 @@ import React, { useState } from "react";
 import FlightSearchForm from "./FlightSearchForm";
 import FlightResults from "./FlightResults";
 import BookingWizard from "./BookingWizard";
-
-interface SearchParams {
-  origin: string;
-  destination: string;
-  departureDate: Date;
-  returnDate?: Date;
-  passengers: number;
-}
+import { searchFlights, Flight, FlightSearchParams } from "../api/flights";
 
 const Home = () => {
   const [showResults, setShowResults] = useState(false);
   const [showBookingWizard, setShowBookingWizard] = useState(false);
   const [selectedFlightId, setSelectedFlightId] = useState<string>("");
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = (searchParams: SearchParams) => {
-    console.log("Search params:", searchParams);
-    setShowResults(true);
+  const handleSearch = async (searchParams: FlightSearchParams) => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log("Search params:", searchParams);
+
+      // Call the API to get flights
+      const flightResults = await searchFlights(searchParams);
+      setFlights(flightResults);
+      setShowResults(true);
+    } catch (err) {
+      setError("Failed to search flights. Please try again.");
+      console.error("Search error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFlightSelect = (flightId: string) => {
@@ -51,10 +60,30 @@ const Home = () => {
         <FlightSearchForm onSearch={handleSearch} />
       </div>
 
-      {/* Results Section */}
-      {showResults && (
+      {/* Loading and Error States */}
+      {loading && (
+        <div className="container mx-auto px-4 mt-8 text-center">
+          <div className="p-4 bg-white rounded-lg shadow">
+            <p className="text-lg">Searching for flights...</p>
+          </div>
+        </div>
+      )}
+
+      {error && (
         <div className="container mx-auto px-4 mt-8">
-          <FlightResults onFlightSelect={handleFlightSelect} />
+          <div className="p-4 bg-red-50 text-red-700 rounded-lg">
+            <p>{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Results Section */}
+      {showResults && !loading && (
+        <div className="container mx-auto px-4 mt-8">
+          <FlightResults
+            flights={flights}
+            onFlightSelect={handleFlightSelect}
+          />
         </div>
       )}
 

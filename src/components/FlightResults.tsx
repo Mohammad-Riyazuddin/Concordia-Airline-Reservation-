@@ -1,62 +1,15 @@
 import React, { useState } from "react";
 import FilterSidebar from "./FilterSidebar";
 import FlightCard from "./FlightCard";
-
-interface Flight {
-  id: string;
-  airline: string;
-  flightNumber: string;
-  departureTime: string;
-  arrivalTime: string;
-  duration: string;
-  price: number;
-  departureAirport: string;
-  arrivalAirport: string;
-}
+import { Flight } from "../api/flights";
 
 interface FlightResultsProps {
-  flights?: Flight[];
+  flights: Flight[];
   onFlightSelect?: (flightId: string) => void;
 }
 
-const defaultFlights: Flight[] = [
-  {
-    id: "1",
-    airline: "American Airlines",
-    flightNumber: "AA123",
-    departureTime: "10:00 AM",
-    arrivalTime: "12:00 PM",
-    duration: "2h 00m",
-    price: 299.99,
-    departureAirport: "JFK",
-    arrivalAirport: "LAX",
-  },
-  {
-    id: "2",
-    airline: "United Airlines",
-    flightNumber: "UA456",
-    departureTime: "2:00 PM",
-    arrivalTime: "5:00 PM",
-    duration: "3h 00m",
-    price: 399.99,
-    departureAirport: "SFO",
-    arrivalAirport: "ORD",
-  },
-  {
-    id: "3",
-    airline: "Delta Air Lines",
-    flightNumber: "DL789",
-    departureTime: "4:00 PM",
-    arrivalTime: "8:00 PM",
-    duration: "4h 00m",
-    price: 499.99,
-    departureAirport: "ATL",
-    arrivalAirport: "SEA",
-  },
-];
-
 const FlightResults: React.FC<FlightResultsProps> = ({
-  flights = defaultFlights,
+  flights = [],
   onFlightSelect = () => {},
 }) => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
@@ -65,6 +18,11 @@ const FlightResults: React.FC<FlightResultsProps> = ({
     [number, number]
   >([0, 24]);
   const [durationRange, setDurationRange] = useState<[number, number]>([0, 24]);
+
+  // Get unique airlines from flights for the filter
+  const airlines = [...new Set(flights.map((flight) => flight.airline))].map(
+    (airline) => ({ id: airline, name: airline }),
+  );
 
   // Filter flights based on selected criteria
   const filteredFlights = flights.filter((flight) => {
@@ -96,6 +54,7 @@ const FlightResults: React.FC<FlightResultsProps> = ({
       <FilterSidebar
         priceRange={priceRange}
         onPriceRangeChange={setPriceRange}
+        airlines={airlines.length > 0 ? airlines : undefined}
         selectedAirlines={selectedAirlines}
         onAirlineChange={(airlineId) => {
           setSelectedAirlines((prev) =>

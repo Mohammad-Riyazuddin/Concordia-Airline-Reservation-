@@ -26,7 +26,7 @@ const Seat = ({
   onSelect = () => {},
 }: SeatProps) => {
   const baseClasses =
-    "w-10 h-10 m-1 flex items-center justify-center rounded-lg transition-colors";
+    "w-8 h-8 m-1 flex items-center justify-center rounded-lg transition-colors text-sm";
   const typeClasses = {
     economy: "bg-gray-100 hover:bg-gray-200",
     business: "bg-blue-100 hover:bg-blue-200",
@@ -38,7 +38,7 @@ const Seat = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            className={`${baseClasses} ${typeClasses[type]} ${isOccupied ? "bg-gray-300 cursor-not-allowed" : ""} ${isSelected ? "ring-2 ring-blue-500" : ""}`}
+            className={`${baseClasses} ${isOccupied ? "bg-gray-400 text-white cursor-not-allowed" : typeClasses[type]} ${isSelected ? "ring-2 ring-blue-500" : ""}`}
             onClick={() => !isOccupied && onSelect(id)}
             disabled={isOccupied}
           >
@@ -69,41 +69,74 @@ interface SeatMapProps {
 
 const SeatMap = ({
   seats = [
+    // First Class (6 seats)
     { id: "1A", number: "1A", type: "first", isOccupied: false },
     { id: "1B", number: "1B", type: "first", isOccupied: true },
+    { id: "1C", number: "1C", type: "first", isOccupied: false },
+    { id: "1D", number: "1D", type: "first", isOccupied: false },
+    { id: "1E", number: "1E", type: "first", isOccupied: false },
+    { id: "1F", number: "1F", type: "first", isOccupied: true },
+
+    // Business Class (6 seats)
     { id: "2A", number: "2A", type: "business", isOccupied: false },
     { id: "2B", number: "2B", type: "business", isOccupied: false },
+    { id: "2C", number: "2C", type: "business", isOccupied: true },
+    { id: "2D", number: "2D", type: "business", isOccupied: false },
+    { id: "2E", number: "2E", type: "business", isOccupied: false },
+    { id: "2F", number: "2F", type: "business", isOccupied: true },
+
+    // Economy Class (18 seats)
     { id: "3A", number: "3A", type: "economy", isOccupied: false },
     { id: "3B", number: "3B", type: "economy", isOccupied: true },
+    { id: "3C", number: "3C", type: "economy", isOccupied: false },
+    { id: "3D", number: "3D", type: "economy", isOccupied: false },
+    { id: "3E", number: "3E", type: "economy", isOccupied: false },
+    { id: "3F", number: "3F", type: "economy", isOccupied: true },
+    { id: "4A", number: "4A", type: "economy", isOccupied: false },
+    { id: "4B", number: "4B", type: "economy", isOccupied: false },
+    { id: "4C", number: "4C", type: "economy", isOccupied: true },
+    { id: "4D", number: "4D", type: "economy", isOccupied: false },
+    { id: "4E", number: "4E", type: "economy", isOccupied: false },
+    { id: "4F", number: "4F", type: "economy", isOccupied: false },
+    { id: "5A", number: "5A", type: "economy", isOccupied: true },
+    { id: "5B", number: "5B", type: "economy", isOccupied: false },
+    { id: "5C", number: "5C", type: "economy", isOccupied: false },
+    { id: "5D", number: "5D", type: "economy", isOccupied: true },
+    { id: "5E", number: "5E", type: "economy", isOccupied: false },
+    { id: "5F", number: "5F", type: "economy", isOccupied: false },
   ],
   selectedSeatId = "",
   onSeatSelect = () => {},
 }: SeatMapProps) => {
   return (
-    <Card className="p-6 bg-white w-full max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">Select Your Seat</h2>
-        <div className="flex gap-4 mb-4">
+    <Card className="p-3 bg-white w-full max-w-2xl mx-auto">
+      <div className="mb-3 flex justify-between items-center">
+        <h2 className="text-xl font-bold">Select Your Seat</h2>
+        <div className="flex gap-3">
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-gray-100 rounded mr-2"></div>
-            <span>Economy</span>
+            <div className="w-3 h-3 bg-gray-100 rounded mr-1"></div>
+            <span className="text-sm">Economy</span>
           </div>
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-blue-100 rounded mr-2"></div>
-            <span>Business</span>
+            <div className="w-3 h-3 bg-blue-100 rounded mr-1"></div>
+            <span className="text-sm">Business</span>
           </div>
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-purple-100 rounded mr-2"></div>
-            <span>First Class</span>
+            <div className="w-3 h-3 bg-purple-100 rounded mr-1"></div>
+            <span className="text-sm">First Class</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-gray-400 rounded mr-1"></div>
+            <span className="text-sm">Occupied</span>
           </div>
         </div>
       </div>
 
       <div className="relative w-full aspect-[2/1] bg-gray-50 rounded-lg p-4">
         {/* Airplane outline */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-full border-2 border-gray-300 rounded-t-full">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-full border-2 border-gray-300 rounded-t-full">
           {/* Seats container */}
-          <div className="mt-16 flex flex-wrap justify-center gap-2 px-8">
+          <div className="mt-16 grid grid-cols-6 gap-1 px-4 max-w-[16rem] mx-auto">
             {seats.map((seat) => (
               <Seat
                 key={seat.id}
@@ -116,7 +149,7 @@ const SeatMap = ({
         </div>
       </div>
 
-      <div className="mt-6 flex justify-between items-center">
+      <div className="mt-3 flex justify-between items-center">
         <div className="text-sm text-gray-600">
           {selectedSeatId
             ? `Selected seat: ${selectedSeatId}`

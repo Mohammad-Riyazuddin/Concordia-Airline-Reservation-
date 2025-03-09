@@ -1,24 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import {
-  Command,
-  CommandInput,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "./ui/command";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, ChevronsUpDown, Plane } from "lucide-react";
-
-interface Airport {
-  code: string;
-  name: string;
-  city: string;
-}
+import { Calendar as CalendarIcon } from "lucide-react";
 
 interface FlightSearchFormProps {
   onSearch?: (searchParams: {
@@ -30,26 +17,31 @@ interface FlightSearchFormProps {
   }) => void;
 }
 
-const defaultAirports: Airport[] = [
-  { code: "JFK", name: "John F. Kennedy International", city: "New York" },
-  { code: "LAX", name: "Los Angeles International", city: "Los Angeles" },
-  { code: "ORD", name: "O'Hare International", city: "Chicago" },
-  { code: "LHR", name: "Heathrow", city: "London" },
-  { code: "CDG", name: "Charles de Gaulle", city: "Paris" },
-];
-
 const FlightSearchForm: React.FC<FlightSearchFormProps> = ({
   onSearch = () => {},
 }) => {
-  const [origin, setOrigin] = React.useState<Airport | null>(null);
-  const [destination, setDestination] = React.useState<Airport | null>(null);
-  const [departureDate, setDepartureDate] = React.useState<Date | undefined>(
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
+  const [departureDate, setDepartureDate] = useState<Date | undefined>(
     new Date(),
   );
-  const [returnDate, setReturnDate] = React.useState<Date | undefined>();
-  const [passengers, setPassengers] = React.useState(1);
-  const [isOriginOpen, setIsOriginOpen] = React.useState(false);
-  const [isDestinationOpen, setIsDestinationOpen] = React.useState(false);
+  const [returnDate, setReturnDate] = useState<Date | undefined>();
+  const [passengers, setPassengers] = useState(1);
+
+  const handleSearch = () => {
+    if (!origin || !destination || !departureDate) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    onSearch({
+      origin,
+      destination,
+      departureDate,
+      returnDate,
+      passengers,
+    });
+  };
 
   return (
     <Card className="w-full p-6 bg-white">
@@ -58,82 +50,23 @@ const FlightSearchForm: React.FC<FlightSearchFormProps> = ({
           {/* Origin Airport */}
           <div className="space-y-2">
             <label className="text-sm font-medium">From</label>
-            <Popover open={isOriginOpen} onOpenChange={setIsOriginOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={isOriginOpen}
-                  className="w-full justify-between"
-                >
-                  {origin ? `${origin.city} (${origin.code})` : "Select origin"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0">
-                <Command>
-                  <CommandInput placeholder="Search airports..." />
-                  <CommandEmpty>No airports found.</CommandEmpty>
-                  <CommandGroup>
-                    {defaultAirports.map((airport) => (
-                      <CommandItem
-                        key={airport.code}
-                        onSelect={() => {
-                          setOrigin(airport);
-                          setIsOriginOpen(false);
-                        }}
-                      >
-                        <Plane className="mr-2 h-4 w-4" />
-                        {airport.city} ({airport.code})
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Input
+              placeholder="Enter origin city or airport"
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value)}
+              required
+            />
           </div>
 
           {/* Destination Airport */}
           <div className="space-y-2">
             <label className="text-sm font-medium">To</label>
-            <Popover
-              open={isDestinationOpen}
-              onOpenChange={setIsDestinationOpen}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={isDestinationOpen}
-                  className="w-full justify-between"
-                >
-                  {destination
-                    ? `${destination.city} (${destination.code})`
-                    : "Select destination"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0">
-                <Command>
-                  <CommandInput placeholder="Search airports..." />
-                  <CommandEmpty>No airports found.</CommandEmpty>
-                  <CommandGroup>
-                    {defaultAirports.map((airport) => (
-                      <CommandItem
-                        key={airport.code}
-                        onSelect={() => {
-                          setDestination(airport);
-                          setIsDestinationOpen(false);
-                        }}
-                      >
-                        <Plane className="mr-2 h-4 w-4" />
-                        {airport.city} ({airport.code})
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Input
+              placeholder="Enter destination city or airport"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              required
+            />
           </div>
 
           {/* Departure Date */}
@@ -201,15 +134,7 @@ const FlightSearchForm: React.FC<FlightSearchFormProps> = ({
 
           <Button
             className="bg-blue-600 hover:bg-blue-700 text-white px-8"
-            onClick={() =>
-              onSearch({
-                origin: origin?.code || "",
-                destination: destination?.code || "",
-                departureDate: departureDate || new Date(),
-                returnDate,
-                passengers,
-              })
-            }
+            onClick={handleSearch}
           >
             Search Flights
           </Button>

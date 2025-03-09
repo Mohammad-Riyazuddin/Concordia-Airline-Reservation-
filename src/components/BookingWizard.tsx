@@ -28,11 +28,11 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-white p-0">
+      <DialogContent className="w-[90vw] max-w-3xl bg-white p-0 max-h-[90vh] overflow-auto">
         <Tabs defaultValue="seat" className="w-full">
-          <div className="border-b px-6 py-4">
-            <h2 className="text-2xl font-bold mb-4">Complete Your Booking</h2>
-            <TabsList className="grid w-full grid-cols-5 gap-4">
+          <div className="border-b px-4 py-3">
+            <h2 className="text-xl font-bold mb-3">Complete Your Booking</h2>
+            <TabsList className="grid w-full grid-cols-5 gap-2 text-sm">
               <TabsTrigger value="seat">Seat</TabsTrigger>
               <TabsTrigger value="class">Class</TabsTrigger>
               <TabsTrigger value="meal">Meal</TabsTrigger>
@@ -41,7 +41,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
             </TabsList>
           </div>
 
-          <div className="p-6">
+          <div className="p-3">
             <TabsContent value="seat">
               <SeatMap
                 selectedSeatId={selectedSeat}
@@ -208,7 +208,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
             </TabsContent>
           </div>
 
-          <div className="border-t px-6 py-4 flex justify-between">
+          <div className="border-t px-4 py-3 flex justify-between">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
