@@ -1,98 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import FlightSearchForm from "./FlightSearchForm";
 import FlightResults from "./FlightResults";
 import BookingWizard from "./BookingWizard";
-import { searchFlights, Flight, FlightSearchParams } from "../api/flights";
+import { Button } from "./ui/button";
+import { searchFlights, FlightSearchParams } from "../api/flights";
 
 const Home = () => {
+  const [searchParams, setSearchParams] = useState<FlightSearchParams | null>(
+    null,
+  );
   const [showResults, setShowResults] = useState(false);
   const [showBookingWizard, setShowBookingWizard] = useState(false);
-  const [selectedFlightId, setSelectedFlightId] = useState<string>("");
-  const [flights, setFlights] = useState<Flight[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedFlight, setSelectedFlight] = useState(null);
 
-  const handleSearch = async (searchParams: FlightSearchParams) => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log("Search params:", searchParams);
-
-      // Call the API to get flights
-      const flightResults = await searchFlights(searchParams);
-      setFlights(flightResults);
-      setShowResults(true);
-    } catch (err) {
-      setError("Failed to search flights. Please try again.");
-      console.error("Search error:", err);
-    } finally {
-      setLoading(false);
-    }
+  const handleSearch = (params: FlightSearchParams) => {
+    setSearchParams(params);
+    setShowResults(true);
+    setShowBookingWizard(false);
   };
 
-  const handleFlightSelect = (flightId: string) => {
-    setSelectedFlightId(flightId);
+  const handleSelectFlight = (flight: any) => {
+    setSelectedFlight(flight);
     setShowBookingWizard(true);
   };
 
-  const handleBookingComplete = (bookingData: any) => {
-    console.log("Booking completed:", {
-      flightId: selectedFlightId,
-      ...bookingData,
-    });
+  const handleBackToResults = () => {
     setShowBookingWizard(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Hero Section */}
-      <div className="bg-blue-600 text-white py-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-4">Find Your Perfect Flight</h1>
-          <p className="text-xl opacity-90">
-            Search and book flights to destinations worldwide
-          </p>
+    <div className="container mx-auto p-4 bg-white min-h-screen">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-blue-600">SkyWay Airlines</h1>
+        <div className="flex justify-end mt-2">
+          <Link
+            to="/auth?mode=login"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-4 text-sm font-medium"
+          >
+            Login
+          </Link>
+          <Link
+            to="/auth?mode=signup"
+            className="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium"
+          >
+            Sign Up
+          </Link>
         </div>
-      </div>
+      </header>
 
-      {/* Search Form Section */}
-      <div className="container mx-auto px-4 -mt-8">
-        <FlightSearchForm onSearch={handleSearch} />
-      </div>
+      <main>
+        <section className="mb-8">
+          <FlightSearchForm onSearch={handleSearch} />
+        </section>
 
-      {/* Loading and Error States */}
-      {loading && (
-        <div className="container mx-auto px-4 mt-8 text-center">
-          <div className="p-4 bg-white rounded-lg shadow">
-            <p className="text-lg">Searching for flights...</p>
-          </div>
-        </div>
-      )}
+        {showResults && searchParams && (
+          <section className="mb-8">
+            <FlightResults
+              searchParams={searchParams}
+              onSelectFlight={handleSelectFlight}
+            />
+          </section>
+        )}
 
-      {error && (
-        <div className="container mx-auto px-4 mt-8">
-          <div className="p-4 bg-red-50 text-red-700 rounded-lg">
-            <p>{error}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Results Section */}
-      {showResults && !loading && (
-        <div className="container mx-auto px-4 mt-8">
-          <FlightResults
-            flights={flights}
-            onFlightSelect={handleFlightSelect}
-          />
-        </div>
-      )}
-
-      {/* Booking Wizard */}
-      <BookingWizard
-        isOpen={showBookingWizard}
-        onClose={() => setShowBookingWizard(false)}
-        onComplete={handleBookingComplete}
-      />
+        {showBookingWizard && selectedFlight && (
+          <section>
+            <BookingWizard
+              flight={selectedFlight}
+              onBack={handleBackToResults}
+            />
+          </section>
+        )}
+      </main>
     </div>
   );
 };

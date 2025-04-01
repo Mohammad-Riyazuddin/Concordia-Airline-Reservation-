@@ -8,25 +8,65 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 interface AuthFormProps {
   mode: "login" | "signup";
   onSubmit: (data: {
+    name?: string;
     email: string;
     password: string;
-    role?: "customer" | "admin";
+    role?: string;
   }) => void;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"customer" | "admin">("customer");
+  const [role, setRole] = useState("customer");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ email, password, role: mode === "signup" ? role : undefined });
+    setError("");
+
+    // Validate inputs
+    if (mode === "signup" && !name) {
+      setError("Name is required");
+      return;
+    }
+
+    if (!email) {
+      setError("Email is required");
+      return;
+    }
+
+    if (!password) {
+      setError("Password is required");
+      return;
+    }
+
+    onSubmit({
+      name: mode === "signup" ? name : undefined,
+      email,
+      password,
+      role: mode === "signup" ? role : undefined,
+    });
   };
 
   return (
     <Card className="w-full max-w-md p-6 bg-white">
       <form onSubmit={handleSubmit} className="space-y-4">
+        {mode === "signup" && (
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              placeholder="Enter your full name"
+            />
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -35,6 +75,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            placeholder="Enter your email"
           />
         </div>
 
@@ -46,15 +87,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            placeholder="Enter your password"
           />
         </div>
 
         {mode === "signup" && (
           <div className="space-y-2">
-            <Label>Role</Label>
+            <Label>Account Type</Label>
             <RadioGroup
               value={role}
-              onValueChange={(value: "customer" | "admin") => setRole(value)}
+              onValueChange={setRole}
+              className="flex space-x-4"
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="customer" id="customer" />
@@ -68,7 +111,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
           </div>
         )}
 
-        <Button type="submit" className="w-full">
+        {error && <div className="text-red-500 text-sm">{error}</div>}
+
+        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
           {mode === "login" ? "Login" : "Sign Up"}
         </Button>
       </form>
