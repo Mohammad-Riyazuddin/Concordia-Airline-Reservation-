@@ -47,9 +47,18 @@ const AuthPage = () => {
 
       const userData = await response.json();
 
-      // Store user data and token in localStorage
-      localStorage.setItem("token", userData.token);
-      localStorage.setItem("user", JSON.stringify(userData.user));
+      // Store user data and token in localStorage based on login type
+      if (loginType === "admin") {
+        localStorage.setItem("token", userData.token);
+        localStorage.setItem("user", JSON.stringify(userData.user));
+      } else {
+        // For customer login with new response format
+        const customerData = {
+          ...userData.customer,
+          role: "customer", // Explicitly set role for customer
+        };
+        localStorage.setItem("user", JSON.stringify(customerData));
+      }
 
       toast({
         title:

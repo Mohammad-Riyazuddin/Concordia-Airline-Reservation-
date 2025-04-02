@@ -6,6 +6,7 @@ import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { searchFlights } from "../api/flights";
 
 interface FlightSearchFormProps {
   onSearch?: (searchParams: {
@@ -28,26 +29,32 @@ const FlightSearchForm: React.FC<FlightSearchFormProps> = ({
   const [returnDate, setReturnDate] = useState<Date | undefined>();
   const [passengers, setPassengers] = useState(1);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!origin || !destination || !departureDate) {
       alert("Please fill in all required fields");
       return;
     }
 
-    // Construct the URL with query parameters
-    const searchUrl = `http://localhost:3000/flights?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
+    try {
+      // Call the searchFlights API directly
+      const searchParams = {
+        origin, // This maps the 'From' field to 'origin' parameter
+        destination, // This maps the 'To' field to 'destination' parameter
+        departureDate,
+        returnDate,
+        passengers,
+      };
 
-    // Navigate to the search URL or call the API
-    window.location.href = searchUrl;
+      console.log("Calling searchFlights API with params:", searchParams);
+      const results = await searchFlights(searchParams);
+      console.log("Search results:", results);
 
-    // Also call the onSearch callback if provided
-    onSearch({
-      origin,
-      destination,
-      departureDate,
-      returnDate,
-      passengers,
-    });
+      // Call the onSearch callback with the search parameters and results
+      onSearch(searchParams);
+    } catch (error) {
+      console.error("Error searching flights:", error);
+      alert("An error occurred while searching for flights. Please try again.");
+    }
   };
 
   return (

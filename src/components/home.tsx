@@ -23,6 +23,14 @@ const Home = () => {
     if (userData) {
       try {
         const parsedUser = JSON.parse(userData);
+        // Set default role to customer if not specified but has userId starting with 'cust'
+        if (
+          !parsedUser.role &&
+          parsedUser.userId &&
+          parsedUser.userId.startsWith("cust")
+        ) {
+          parsedUser.role = "customer";
+        }
         setUser(parsedUser);
       } catch (error) {
         console.error("Error parsing user data:", error);
@@ -108,18 +116,19 @@ const Home = () => {
 
         {showResults && searchParams && (
           <section className="mb-8">
-            <FlightResults
-              searchParams={searchParams}
-              onSelectFlight={handleSelectFlight}
-            />
+            <FlightResults flights={[]} onFlightSelect={handleSelectFlight} />
           </section>
         )}
 
         {showBookingWizard && selectedFlight && (
           <section>
             <BookingWizard
-              flight={selectedFlight}
-              onBack={handleBackToResults}
+              isOpen={true}
+              onClose={handleBackToResults}
+              onComplete={(bookingData) => {
+                console.log("Booking completed:", bookingData);
+                setShowBookingWizard(false);
+              }}
             />
           </section>
         )}
