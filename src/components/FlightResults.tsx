@@ -48,6 +48,17 @@ const FlightResults: React.FC<FlightResultsProps> = ({
 
   // Filter flights based on selected criteria
   const filteredFlights = flights.filter((flight) => {
+    // Skip filtering if flight data is missing required properties
+    if (
+      !flight ||
+      !flight.price ||
+      !flight.departureTime ||
+      !flight.arrivalTime
+    ) {
+      console.log("Skipping invalid flight data:", flight);
+      return false;
+    }
+
     const price = flight.price;
     const isInPriceRange = price >= priceRange[0] && price <= priceRange[1];
 
@@ -118,6 +129,7 @@ const FlightResults: React.FC<FlightResultsProps> = ({
 
         <div className="space-y-4">
           {filteredFlights.map((flight, index) => {
+            console.log("Rendering flight:", flight);
             // Handle both FlightData and FlightResponse interfaces
             const departureAirport =
               "departureAirport" in flight
@@ -135,14 +147,22 @@ const FlightResults: React.FC<FlightResultsProps> = ({
             return (
               <FlightCard
                 key={`${flight.flightNumber}-${index}`}
-                airline={flight.airline}
-                flightNumber={flight.flightNumber}
-                departureTime={formatDateTime(flight.departureTime)}
-                arrivalTime={formatDateTime(flight.arrivalTime)}
+                airline={flight.airline || "Unknown"}
+                flightNumber={flight.flightNumber || "Unknown"}
+                departureTime={
+                  flight.departureTime
+                    ? formatDateTime(flight.departureTime)
+                    : "Unknown"
+                }
+                arrivalTime={
+                  flight.arrivalTime
+                    ? formatDateTime(flight.arrivalTime)
+                    : "Unknown"
+                }
                 duration={duration}
-                price={flight.price}
-                departureAirport={departureAirport}
-                arrivalAirport={arrivalAirport}
+                price={flight.price || 0}
+                departureAirport={departureAirport || "Unknown"}
+                arrivalAirport={arrivalAirport || "Unknown"}
                 onSelect={() => onFlightSelect(flight)}
               />
             );

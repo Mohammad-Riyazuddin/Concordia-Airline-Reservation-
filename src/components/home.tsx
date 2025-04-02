@@ -53,23 +53,20 @@ const Home = () => {
     setShowBookingWizard(false);
 
     try {
-      // Call the actual API to get flight data
-      const results = await searchFlights(params);
+      // Directly use the API response without any transformation
+      const searchUrl = `http://localhost:3000/flights?origin=${encodeURIComponent(params.origin)}&destination=${encodeURIComponent(params.destination)}`;
+      console.log("Fetching from URL:", searchUrl);
+
+      const response = await fetch(searchUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to search flights: ${response.statusText}`);
+      }
+
+      const results = await response.json();
       console.log("API search results:", results);
 
-      // Convert API response to FlightData format if needed
-      const flightData: FlightData[] = results.map((flight: any) => ({
-        flightNumber: flight.flightNumber,
-        departureTime: flight.departureTime,
-        arrivalTime: flight.arrivalTime,
-        origin: flight.origin,
-        destination: flight.destination,
-        price: flight.price,
-        airline: flight.airline,
-        availableSeats: flight.availableSeats || [],
-      }));
-
-      setFlights(flightData);
+      // Use the results directly without transformation
+      setFlights(results);
       setShowResults(true);
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -78,7 +75,7 @@ const Home = () => {
     }
   };
 
-  const handleSelectFlight = (flight: FlightData) => {
+  const handleSelectFlight = (flight: any) => {
     setSelectedFlight(flight);
     setShowBookingWizard(true);
   };
