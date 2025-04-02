@@ -53,74 +53,23 @@ const Home = () => {
     setShowBookingWizard(false);
 
     try {
-      // For demo purposes, we'll use mock data instead of calling the API
-      // In a real app, you would use: const results = await searchFlights(params);
-      const mockResults: FlightData[] = [
-        {
-          flightNumber: "E6009",
-          departureTime: "2025-06-01T10:00:00",
-          arrivalTime: "2025-06-01T10:21:00",
-          origin: "Vancouver",
-          destination: "Montreal",
-          price: 500,
-          airline: "Air Canada",
-          availableSeats: [
-            {
-              seatNumber: "A1",
-              class: "Economy",
-              isOccupied: true,
-            },
-            {
-              seatNumber: "A2",
-              class: "Economy",
-              isOccupied: false,
-            },
-            {
-              seatNumber: "A3",
-              class: "First",
-              isOccupied: false,
-            },
-            {
-              seatNumber: "A4",
-              class: "Economy",
-              isOccupied: false,
-            },
-          ],
-        },
-        {
-          flightNumber: "WJ238",
-          departureTime: "2025-06-01T14:30:00",
-          arrivalTime: "2025-06-01T16:45:00",
-          origin: "Vancouver",
-          destination: "Montreal",
-          price: 450,
-          airline: "WestJet",
-          availableSeats: [
-            {
-              seatNumber: "B1",
-              class: "Business",
-              isOccupied: false,
-            },
-            {
-              seatNumber: "B2",
-              class: "Business",
-              isOccupied: true,
-            },
-            {
-              seatNumber: "C1",
-              class: "Economy",
-              isOccupied: false,
-            },
-            {
-              seatNumber: "C2",
-              class: "Economy",
-              isOccupied: false,
-            },
-          ],
-        },
-      ];
+      // Call the actual API to get flight data
+      const results = await searchFlights(params);
+      console.log("API search results:", results);
 
-      setFlights(mockResults);
+      // Convert API response to FlightData format if needed
+      const flightData: FlightData[] = results.map((flight: any) => ({
+        flightNumber: flight.flightNumber,
+        departureTime: flight.departureTime,
+        arrivalTime: flight.arrivalTime,
+        origin: flight.origin,
+        destination: flight.destination,
+        price: flight.price,
+        airline: flight.airline,
+        availableSeats: flight.availableSeats || [],
+      }));
+
+      setFlights(flightData);
       setShowResults(true);
     } catch (error) {
       console.error("Error searching flights:", error);
