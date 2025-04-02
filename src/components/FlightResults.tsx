@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import FilterSidebar from "./FilterSidebar";
 import FlightCard from "./FlightCard";
-import { Flight } from "../api/flights";
+import { FlightData } from "../api/flights";
 
 interface FlightResultsProps {
-  flights: Flight[];
-  onFlightSelect?: (flightId: string) => void;
+  flights: FlightData[];
+  onFlightSelect?: (flight: FlightData) => void;
 }
 
 const FlightResults: React.FC<FlightResultsProps> = ({
@@ -24,6 +24,28 @@ const FlightResults: React.FC<FlightResultsProps> = ({
     (airline) => ({ id: airline, name: airline }),
   );
 
+  // Helper function to extract hour from ISO date string or regular time string
+  const extractHour = (timeString: string) => {
+    if (timeString.includes("T")) {
+      // Handle ISO date string format
+      return parseInt(timeString.split("T")[1].split(":")[0]);
+    }
+    // Handle regular time string format (e.g., "10:00 AM")
+    return parseInt(timeString.split(":")[0]);
+  };
+
+  // Calculate duration in hours (simple approximation for filtering)
+  const calculateDuration = (departure: string, arrival: string) => {
+    try {
+      const departureDate = new Date(departure);
+      const arrivalDate = new Date(arrival);
+      const durationMs = arrivalDate.getTime() - departureDate.getTime();
+      return Math.ceil(durationMs / (1000 * 60 * 60)); // Convert ms to hours
+    } catch (e) {
+      return 2; // Default duration if calculation fails
+    }
+  };
+
   // Filter flights based on selected criteria
   const filteredFlights = flights.filter((flight) => {
     const price = flight.price;
@@ -33,14 +55,17 @@ const FlightResults: React.FC<FlightResultsProps> = ({
       selectedAirlines.length === 0 ||
       selectedAirlines.includes(flight.airline);
 
-    // Convert time string to hour number for filtering
-    const departureHour = parseInt(flight.departureTime.split(":")[0]);
+    // Extract hour from departure time
+    const departureHour = extractHour(flight.departureTime);
     const isInTimeRange =
       departureHour >= departureTimeRange[0] &&
       departureHour <= departureTimeRange[1];
 
-    // Convert duration string to hours for filtering
-    const durationHours = parseInt(flight.duration.split("h")[0]);
+    // Calculate duration
+    const durationHours = calculateDuration(
+      flight.departureTime,
+      flight.arrivalTime,
+    );
     const isInDurationRange =
       durationHours >= durationRange[0] && durationHours <= durationRange[1];
 
@@ -48,6 +73,18 @@ const FlightResults: React.FC<FlightResultsProps> = ({
       isInPriceRange && isAirlineSelected && isInTimeRange && isInDurationRange
     );
   });
+
+  // Format date for display
+  const formatDateTime = (dateTimeStr: string) => {
+    if (dateTimeStr.includes("T")) {
+      const date = new Date(dateTimeStr);
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return dateTimeStr; // Return as is if not ISO format
+  };
 
   return (
     <div className="flex gap-6 p-6 min-h-screen bg-gray-50">
@@ -80,18 +117,18 @@ const FlightResults: React.FC<FlightResultsProps> = ({
         </div>
 
         <div className="space-y-4">
-          {filteredFlights.map((flight) => (
+          {filteredFlights.map((flight, index) => (
             <FlightCard
-              key={flight.id}
+              key={`${flight.flightNumber}-${index}`}
               airline={flight.airline}
               flightNumber={flight.flightNumber}
-              departureTime={flight.departureTime}
-              arrivalTime={flight.arrivalTime}
-              duration={flight.duration}
+              departureTime={formatDateTime(flight.departureTime)}
+              arrivalTime={formatDateTime(flight.arrivalTime)}
+              duration={`${calculateDuration(flight.departureTime, flight.arrivalTime)}h 00m`}
               price={flight.price}
-              departureAirport={flight.departureAirport}
-              arrivalAirport={flight.arrivalAirport}
-              onSelect={() => onFlightSelect(flight.id)}
+              departureAirport={flight.origin}
+              arrivalAirport={flight.destination}
+              onSelect={() => onFlightSelect(flight)}
             />
           ))}
 

@@ -8,23 +8,41 @@ import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { FlightData } from "../api/flights";
 
 interface BookingWizardProps {
   isOpen?: boolean;
   onClose?: () => void;
   onComplete?: (bookingData: any) => void;
+  selectedFlight?: FlightData;
 }
 
 const BookingWizard: React.FC<BookingWizardProps> = ({
   isOpen = true,
   onClose = () => {},
   onComplete = () => {},
+  selectedFlight,
 }) => {
   const [selectedSeat, setSelectedSeat] = React.useState("");
-  const [travelClass, setTravelClass] = React.useState("economy");
   const [mealPreference, setMealPreference] = React.useState("regular");
   const [baggage, setBaggage] = React.useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = React.useState("");
+
+  // Format date for display
+  const formatDateTime = (dateTimeStr?: string) => {
+    if (!dateTimeStr) return "";
+    if (dateTimeStr.includes("T")) {
+      const date = new Date(dateTimeStr);
+      return date.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return dateTimeStr; // Return as is if not ISO format
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -32,9 +50,31 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
         <Tabs defaultValue="seat" className="w-full">
           <div className="border-b px-4 py-3">
             <h2 className="text-xl font-bold mb-3">Complete Your Booking</h2>
-            <TabsList className="grid w-full grid-cols-5 gap-2 text-sm">
+            {selectedFlight && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                <h3 className="font-semibold text-blue-800">
+                  {selectedFlight.airline} - {selectedFlight.flightNumber}
+                </h3>
+                <div className="flex justify-between mt-2 text-sm">
+                  <div>
+                    <p className="font-medium">
+                      {selectedFlight.origin} → {selectedFlight.destination}
+                    </p>
+                    <p>
+                      Departure: {formatDateTime(selectedFlight.departureTime)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p>Arrival: {formatDateTime(selectedFlight.arrivalTime)}</p>
+                    <p className="font-medium text-green-700">
+                      ${selectedFlight.price.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            <TabsList className="grid w-full grid-cols-4 gap-2 text-sm">
               <TabsTrigger value="seat">Seat</TabsTrigger>
-              <TabsTrigger value="class">Class</TabsTrigger>
               <TabsTrigger value="meal">Meal</TabsTrigger>
               <TabsTrigger value="baggage">Baggage</TabsTrigger>
               <TabsTrigger value="special">Requests</TabsTrigger>
@@ -46,46 +86,16 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
               <SeatMap
                 selectedSeatId={selectedSeat}
                 onSeatSelect={setSelectedSeat}
+                seats={selectedFlight?.availableSeats?.map((seat) => ({
+                  id: seat.seatNumber,
+                  number: seat.seatNumber,
+                  type: seat.class.toLowerCase() as
+                    | "economy"
+                    | "business"
+                    | "first",
+                  isOccupied: seat.isOccupied,
+                }))}
               />
-            </TabsContent>
-
-            <TabsContent value="class">
-              <div className="space-y-6">
-                <h3 className="text-xl font-semibold">Select Travel Class</h3>
-                <RadioGroup
-                  value={travelClass}
-                  onValueChange={setTravelClass}
-                  className="space-y-4"
-                >
-                  <div className="flex items-center space-x-4">
-                    <RadioGroupItem value="economy" id="economy" />
-                    <Label htmlFor="economy">
-                      Economy Class
-                      <p className="text-sm text-gray-500">
-                        Standard seating with basic amenities
-                      </p>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <RadioGroupItem value="business" id="business" />
-                    <Label htmlFor="business">
-                      Business Class
-                      <p className="text-sm text-gray-500">
-                        Premium seating with enhanced services
-                      </p>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <RadioGroupItem value="first" id="first" />
-                    <Label htmlFor="first">
-                      First Class
-                      <p className="text-sm text-gray-500">
-                        Luxury experience with exclusive amenities
-                      </p>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
             </TabsContent>
 
             <TabsContent value="meal">
@@ -216,12 +226,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
               onClick={() =>
                 onComplete({
                   selectedSeat,
-                  travelClass,
+                  flightNumber: selectedFlight?.flightNumber,
                   mealPreference,
                   baggage,
                   specialRequests,
                 })
               }
+              disabled={!selectedSeat}
             >
               Complete Booking
             </Button>

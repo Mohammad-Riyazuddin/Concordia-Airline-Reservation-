@@ -108,6 +108,20 @@ const SeatMap = ({
   selectedSeatId = "",
   onSeatSelect = () => {},
 }: SeatMapProps) => {
+  // Group seats by type for better organization
+  const seatsByType = {
+    first: seats.filter((seat) => seat.type === "first"),
+    business: seats.filter((seat) => seat.type === "business"),
+    economy: seats.filter((seat) => seat.type === "economy"),
+  };
+
+  // Calculate grid columns based on available seats
+  const getGridCols = (seatCount: number) => {
+    if (seatCount <= 3) return 3;
+    if (seatCount <= 6) return 6;
+    return 6; // Default to 6 columns max
+  };
+
   return (
     <Card className="p-3 bg-white w-full max-w-2xl mx-auto">
       <div className="mb-3 flex justify-between items-center">
@@ -132,20 +146,71 @@ const SeatMap = ({
         </div>
       </div>
 
-      <div className="relative w-full aspect-[2/1] bg-gray-50 rounded-lg p-4">
+      <div className="relative w-full bg-gray-50 rounded-lg p-4">
         {/* Airplane outline */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-full border-2 border-gray-300 rounded-t-full">
-          {/* Seats container */}
-          <div className="mt-16 grid grid-cols-6 gap-1 px-4 max-w-[16rem] mx-auto">
-            {seats.map((seat) => (
-              <Seat
-                key={seat.id}
-                {...seat}
-                isSelected={selectedSeatId === seat.id}
-                onSelect={onSeatSelect}
-              />
-            ))}
-          </div>
+        <div className="relative border-2 border-gray-300 rounded-t-3xl p-4">
+          {/* First Class Section */}
+          {seatsByType.first.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-2 text-purple-700">
+                First Class
+              </h3>
+              <div
+                className={`grid grid-cols-${getGridCols(seatsByType.first.length)} gap-1 max-w-md mx-auto`}
+              >
+                {seatsByType.first.map((seat) => (
+                  <Seat
+                    key={seat.id}
+                    {...seat}
+                    isSelected={selectedSeatId === seat.id}
+                    onSelect={onSeatSelect}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Business Class Section */}
+          {seatsByType.business.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-2 text-blue-700">
+                Business Class
+              </h3>
+              <div
+                className={`grid grid-cols-${getGridCols(seatsByType.business.length)} gap-1 max-w-md mx-auto`}
+              >
+                {seatsByType.business.map((seat) => (
+                  <Seat
+                    key={seat.id}
+                    {...seat}
+                    isSelected={selectedSeatId === seat.id}
+                    onSelect={onSeatSelect}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Economy Class Section */}
+          {seatsByType.economy.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium mb-2 text-gray-700">
+                Economy Class
+              </h3>
+              <div
+                className={`grid grid-cols-${getGridCols(seatsByType.economy.length)} gap-1 max-w-md mx-auto`}
+              >
+                {seatsByType.economy.map((seat) => (
+                  <Seat
+                    key={seat.id}
+                    {...seat}
+                    isSelected={selectedSeatId === seat.id}
+                    onSelect={onSeatSelect}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -158,7 +223,7 @@ const SeatMap = ({
         <Button
           variant="default"
           disabled={!selectedSeatId}
-          onClick={() => console.log(`Confirming seat ${selectedSeatId}`)}
+          onClick={() => onSeatSelect(selectedSeatId)}
         >
           Confirm Selection
         </Button>

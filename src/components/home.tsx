@@ -5,7 +5,7 @@ import FlightResults from "./FlightResults";
 import BookingWizard from "./BookingWizard";
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
-import { searchFlights, FlightSearchParams } from "../api/flights";
+import { searchFlights, FlightSearchParams, FlightData } from "../api/flights";
 
 const Home = () => {
   const [searchParams, setSearchParams] = useState<FlightSearchParams | null>(
@@ -13,7 +13,9 @@ const Home = () => {
   );
   const [showResults, setShowResults] = useState(false);
   const [showBookingWizard, setShowBookingWizard] = useState(false);
-  const [selectedFlight, setSelectedFlight] = useState(null);
+  const [selectedFlight, setSelectedFlight] = useState<FlightData | null>(null);
+  const [flights, setFlights] = useState<FlightData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const navigate = useNavigate();
 
@@ -45,19 +47,108 @@ const Home = () => {
     navigate("/auth?mode=login");
   };
 
-  const handleSearch = (params: FlightSearchParams) => {
+  const handleSearch = async (params: FlightSearchParams) => {
     setSearchParams(params);
-    setShowResults(true);
+    setIsLoading(true);
     setShowBookingWizard(false);
+
+    try {
+      // For demo purposes, we'll use mock data instead of calling the API
+      // In a real app, you would use: const results = await searchFlights(params);
+      const mockResults: FlightData[] = [
+        {
+          flightNumber: "E6009",
+          departureTime: "2025-06-01T10:00:00",
+          arrivalTime: "2025-06-01T10:21:00",
+          origin: "Vancouver",
+          destination: "Montreal",
+          price: 500,
+          airline: "Air Canada",
+          availableSeats: [
+            {
+              seatNumber: "A1",
+              class: "Economy",
+              isOccupied: true,
+            },
+            {
+              seatNumber: "A2",
+              class: "Economy",
+              isOccupied: false,
+            },
+            {
+              seatNumber: "A3",
+              class: "First",
+              isOccupied: false,
+            },
+            {
+              seatNumber: "A4",
+              class: "Economy",
+              isOccupied: false,
+            },
+          ],
+        },
+        {
+          flightNumber: "WJ238",
+          departureTime: "2025-06-01T14:30:00",
+          arrivalTime: "2025-06-01T16:45:00",
+          origin: "Vancouver",
+          destination: "Montreal",
+          price: 450,
+          airline: "WestJet",
+          availableSeats: [
+            {
+              seatNumber: "B1",
+              class: "Business",
+              isOccupied: false,
+            },
+            {
+              seatNumber: "B2",
+              class: "Business",
+              isOccupied: true,
+            },
+            {
+              seatNumber: "C1",
+              class: "Economy",
+              isOccupied: false,
+            },
+            {
+              seatNumber: "C2",
+              class: "Economy",
+              isOccupied: false,
+            },
+          ],
+        },
+      ];
+
+      setFlights(mockResults);
+      setShowResults(true);
+    } catch (error) {
+      console.error("Error searching flights:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSelectFlight = (flight: any) => {
+  const handleSelectFlight = (flight: FlightData) => {
     setSelectedFlight(flight);
     setShowBookingWizard(true);
   };
 
   const handleBackToResults = () => {
     setShowBookingWizard(false);
+  };
+
+  const handleBookingComplete = (bookingData: any) => {
+    console.log("Booking completed:", {
+      ...bookingData,
+      flightDetails: selectedFlight,
+    });
+    setShowBookingWizard(false);
+
+    // Show booking confirmation
+    alert(
+      `Booking confirmed! Your flight ${selectedFlight?.flightNumber} from ${selectedFlight?.origin} to ${selectedFlight?.destination} has been booked.`,
+    );
   };
 
   return (
@@ -114,9 +205,18 @@ const Home = () => {
           <FlightSearchForm onSearch={handleSearch} />
         </section>
 
-        {showResults && searchParams && (
+        {isLoading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {showResults && !isLoading && (
           <section className="mb-8">
-            <FlightResults flights={[]} onFlightSelect={handleSelectFlight} />
+            <FlightResults
+              flights={flights}
+              onFlightSelect={handleSelectFlight}
+            />
           </section>
         )}
 
@@ -125,10 +225,8 @@ const Home = () => {
             <BookingWizard
               isOpen={true}
               onClose={handleBackToResults}
-              onComplete={(bookingData) => {
-                console.log("Booking completed:", bookingData);
-                setShowBookingWizard(false);
-              }}
+              onComplete={handleBookingComplete}
+              selectedFlight={selectedFlight}
             />
           </section>
         )}
