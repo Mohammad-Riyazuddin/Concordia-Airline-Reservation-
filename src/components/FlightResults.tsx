@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import FilterSidebar from "./FilterSidebar";
 import FlightCard from "./FlightCard";
-import { FlightData } from "../api/flights";
+import { FlightData, FlightResponse } from "../api/flights";
 
 interface FlightResultsProps {
-  flights: FlightData[];
-  onFlightSelect?: (flight: FlightData) => void;
+  flights: FlightData[] | FlightResponse[];
+  onFlightSelect?: (flight: FlightData | FlightResponse) => void;
 }
 
 const FlightResults: React.FC<FlightResultsProps> = ({
@@ -117,20 +117,36 @@ const FlightResults: React.FC<FlightResultsProps> = ({
         </div>
 
         <div className="space-y-4">
-          {filteredFlights.map((flight, index) => (
-            <FlightCard
-              key={`${flight.flightNumber}-${index}`}
-              airline={flight.airline}
-              flightNumber={flight.flightNumber}
-              departureTime={formatDateTime(flight.departureTime)}
-              arrivalTime={formatDateTime(flight.arrivalTime)}
-              duration={`${calculateDuration(flight.departureTime, flight.arrivalTime)}h 00m`}
-              price={flight.price}
-              departureAirport={flight.origin}
-              arrivalAirport={flight.destination}
-              onSelect={() => onFlightSelect(flight)}
-            />
-          ))}
+          {filteredFlights.map((flight, index) => {
+            // Handle both FlightData and FlightResponse interfaces
+            const departureAirport =
+              "departureAirport" in flight
+                ? flight.departureAirport
+                : flight.origin;
+            const arrivalAirport =
+              "arrivalAirport" in flight
+                ? flight.arrivalAirport
+                : flight.destination;
+            const duration =
+              "duration" in flight
+                ? flight.duration
+                : `${calculateDuration(flight.departureTime, flight.arrivalTime)}h 00m`;
+
+            return (
+              <FlightCard
+                key={`${flight.flightNumber}-${index}`}
+                airline={flight.airline}
+                flightNumber={flight.flightNumber}
+                departureTime={formatDateTime(flight.departureTime)}
+                arrivalTime={formatDateTime(flight.arrivalTime)}
+                duration={duration}
+                price={flight.price}
+                departureAirport={departureAirport}
+                arrivalAirport={arrivalAirport}
+                onSelect={() => onFlightSelect(flight)}
+              />
+            );
+          })}
 
           {filteredFlights.length === 0 && (
             <div className="bg-white p-8 rounded-lg text-center">
