@@ -1,37 +1,13 @@
-import mongoose from "mongoose";
+// This file is kept as a placeholder but Mongoose model is removed
+// as the application is now frontend-only with API calls to a backend
 
-const loyaltyProgramSchema = new mongoose.Schema({
-  programId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  programName: {
-    type: String,
-    required: true,
-  },
-  pointsPerDollar: {
-    type: Number,
-    required: true,
-  },
-  tier: {
-    type: String,
-    required: true,
-  },
-  active: {
-    type: Boolean,
-    default: true,
-  },
-  validTill: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-export const LoyaltyProgram =
-  mongoose.models.LoyaltyProgram ||
-  mongoose.model("LoyaltyProgram", loyaltyProgramSchema);
+export interface LoyaltyProgram {
+  _id?: string;
+  programId: string;
+  programName: string;
+  pointsPerDollar: number;
+  tier: string;
+  active: boolean;
+  validTill: string;
+  createdAt?: Date;
+}

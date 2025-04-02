@@ -1,5 +1,3 @@
-import { Flight } from "../models/Flight";
-
 export interface FlightSearchParams {
   origin: string;
   destination: string;
@@ -35,81 +33,102 @@ export interface FlightResponse {
   arrivalAirport: string;
 }
 
-// Add a new flight
+// Add a new flight - now using fetch API
 export const addFlight = async (flightData: FlightData) => {
   try {
-    // Check if flight with the same number already exists
-    const existingFlight = await Flight.findOne({
-      flightNumber: flightData.flightNumber,
+    const response = await fetch("http://localhost:3000/flights", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(flightData),
     });
-    if (existingFlight) {
-      throw new Error("A flight with this number already exists");
+
+    if (!response.ok) {
+      throw new Error(`Failed to add flight: ${response.statusText}`);
     }
 
-    // Create new flight
-    const newFlight = await Flight.create(flightData);
-    return newFlight;
+    return await response.json();
   } catch (error) {
     console.error("Error adding flight:", error);
     throw error;
   }
 };
 
-// Get all flights
+// Get all flights - now using fetch API
 export const getAllFlights = async () => {
   try {
-    const flights = await Flight.find({}).sort({ departureTime: 1 });
-    return flights;
+    const response = await fetch("http://localhost:3000/flights");
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch flights: ${response.statusText}`);
+    }
+
+    return await response.json();
   } catch (error) {
     console.error("Error fetching flights:", error);
     throw error;
   }
 };
 
-// Get a specific flight by flight number
+// Get a specific flight by flight number - now using fetch API
 export const getFlightByNumber = async (flightNumber: string) => {
   try {
-    const flight = await Flight.findOne({ flightNumber });
-    if (!flight) {
-      throw new Error("Flight not found");
+    const response = await fetch(
+      `http://localhost:3000/flights/${flightNumber}`,
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch flight: ${response.statusText}`);
     }
-    return flight;
+
+    return await response.json();
   } catch (error) {
     console.error("Error fetching flight:", error);
     throw error;
   }
 };
 
-// Update a flight
+// Update a flight - now using fetch API
 export const updateFlight = async (
-  flightNumber: string,
+  flightId: string,
   updateData: Partial<FlightData>,
 ) => {
   try {
-    const updatedFlight = await Flight.findOneAndUpdate(
-      { flightNumber },
-      { $set: updateData },
-      { new: true },
+    const response = await fetch(
+      `http://localhost:3000/flight/${flightId}/update`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      },
     );
 
-    if (!updatedFlight) {
-      throw new Error("Flight not found");
+    if (!response.ok) {
+      throw new Error(`Failed to update flight: ${response.statusText}`);
     }
 
-    return updatedFlight;
+    return await response.json();
   } catch (error) {
     console.error("Error updating flight:", error);
     throw error;
   }
 };
 
-// Delete a flight
-export const deleteFlight = async (flightNumber: string) => {
+// Delete a flight - now using fetch API
+export const deleteFlight = async (flightId: string) => {
   try {
-    const result = await Flight.findOneAndDelete({ flightNumber });
+    const response = await fetch(
+      `http://localhost:3000/flight/${flightId}/delete`,
+      {
+        method: "DELETE",
+      },
+    );
 
-    if (!result) {
-      throw new Error("Flight not found");
+    if (!response.ok) {
+      throw new Error(`Failed to delete flight: ${response.statusText}`);
     }
 
     return { success: true, message: "Flight deleted successfully" };
@@ -119,60 +138,24 @@ export const deleteFlight = async (flightNumber: string) => {
   }
 };
 
-// Search flights - this is the original function that will now use the database
+// Search flights - now using fetch API
 export const searchFlights = async (
   params: FlightSearchParams,
 ): Promise<FlightResponse[]> => {
   console.log("Searching flights with params:", params);
 
   try {
-    // Convert the departure date to a Date object if it's not already
-    const departureDate = new Date(params.departureDate);
+    // Construct the URL with query parameters
+    const searchUrl = `http://localhost:3000/flights?origin=${encodeURIComponent(params.origin)}&destination=${encodeURIComponent(params.destination)}`;
 
-    // Set the start and end of the day for the departure date
-    const startOfDay = new Date(departureDate);
-    startOfDay.setHours(0, 0, 0, 0);
+    const response = await fetch(searchUrl);
 
-    const endOfDay = new Date(departureDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    if (!response.ok) {
+      throw new Error(`Failed to search flights: ${response.statusText}`);
+    }
 
-    // Query the database for flights matching the criteria
-    const flights = await Flight.find({
-      origin: { $regex: new RegExp(params.origin, "i") },
-      destination: { $regex: new RegExp(params.destination, "i") },
-      departureTime: { $gte: startOfDay, $lte: endOfDay },
-    }).sort({ departureTime: 1 });
-
-    // Transform the database results to match the expected response format
-    return flights.map((flight) => {
-      const departureTime = new Date(flight.departureTime);
-      const arrivalTime = new Date(flight.arrivalTime);
-
-      // Calculate duration in hours and minutes
-      const durationMs = arrivalTime.getTime() - departureTime.getTime();
-      const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
-      const durationMinutes = Math.floor(
-        (durationMs % (1000 * 60 * 60)) / (1000 * 60),
-      );
-
-      return {
-        id: flight._id.toString(),
-        airline: flight.airline,
-        flightNumber: flight.flightNumber,
-        departureTime: departureTime.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        arrivalTime: arrivalTime.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        duration: `${durationHours}h ${durationMinutes.toString().padStart(2, "0")}m`,
-        price: flight.price,
-        departureAirport: flight.origin.toUpperCase(),
-        arrivalAirport: flight.destination.toUpperCase(),
-      };
-    });
+    const flights = await response.json();
+    return flights;
   } catch (error) {
     console.error("Error searching flights:", error);
 

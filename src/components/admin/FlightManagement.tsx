@@ -75,7 +75,7 @@ const FlightManagement = () => {
       setError(null);
 
       // Use fetch to directly get flights from the API endpoint
-      const response = await fetch("/flights");
+      const response = await fetch("http://localhost:3000/flights");
       if (!response.ok) {
         throw new Error(`Failed to fetch flights: ${response.statusText}`);
       }
@@ -122,7 +122,7 @@ const FlightManagement = () => {
       } as FlightData;
 
       // Use fetch to make a direct POST request to the /flights endpoint
-      const response = await fetch("/flights", {
+      const response = await fetch("http://localhost:3000/flights", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -153,13 +153,16 @@ const FlightManagement = () => {
       };
 
       // Use fetch to make a direct PUT request to the /flight/{flightID}/update endpoint
-      const response = await fetch(`/flight/${currentFlight._id}/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `http://localhost:3000/flight/${currentFlight._id}/update`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(flightData),
         },
-        body: JSON.stringify(flightData),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to update flight: ${response.statusText}`);
@@ -179,9 +182,12 @@ const FlightManagement = () => {
       if (!currentFlight) return;
 
       // Use fetch to make a direct DELETE request to the /flight/{flightID}/delete endpoint
-      const response = await fetch(`/flight/${currentFlight._id}/delete`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://localhost:3000/flight/${currentFlight._id}/delete`,
+        {
+          method: "DELETE",
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to delete flight: ${response.statusText}`);

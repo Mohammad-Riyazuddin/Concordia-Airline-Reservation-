@@ -1,66 +1,21 @@
-import mongoose from "mongoose";
+// This file is kept as a placeholder but Mongoose model is removed
+// as the application is now frontend-only with API calls to a backend
 
-interface Seat {
+export interface Seat {
   seatNumber: string;
   class: "Economy" | "Business" | "First";
   isOccupied: boolean;
 }
 
-const seatSchema = new mongoose.Schema({
-  seatNumber: {
-    type: String,
-    required: true,
-  },
-  class: {
-    type: String,
-    enum: ["Economy", "Business", "First"],
-    default: "Economy",
-  },
-  isOccupied: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const flightSchema = new mongoose.Schema({
-  flightNumber: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  departureTime: {
-    type: Date,
-    required: true,
-  },
-  arrivalTime: {
-    type: Date,
-    required: true,
-  },
-  origin: {
-    type: String,
-    required: true,
-  },
-  destination: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  airline: {
-    type: String,
-    required: true,
-  },
-  availableSeats: {
-    type: [seatSchema],
-    default: [],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-export const Flight =
-  mongoose.models.Flight || mongoose.model("Flight", flightSchema);
+export interface Flight {
+  _id?: string;
+  flightNumber: string;
+  departureTime: Date | string;
+  arrivalTime: Date | string;
+  origin: string;
+  destination: string;
+  price: number;
+  airline: string;
+  availableSeats: Seat[];
+  createdAt?: Date;
+}

@@ -1,5 +1,3 @@
-import { LoyaltyProgram } from "../models/LoyaltyProgram";
-
 export interface LoyaltyProgramData {
   programId: string;
   programName: string;
@@ -9,81 +7,110 @@ export interface LoyaltyProgramData {
   validTill: string;
 }
 
-// Add a new loyalty program
+// Add a new loyalty program - now using fetch API
 export const addLoyaltyProgram = async (programData: LoyaltyProgramData) => {
   try {
-    // Check if program with the same ID already exists
-    const existingProgram = await LoyaltyProgram.findOne({
-      programId: programData.programId,
+    const response = await fetch("http://localhost:3000/loyalty-programs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(programData),
     });
-    if (existingProgram) {
-      throw new Error("A loyalty program with this ID already exists");
+
+    if (!response.ok) {
+      throw new Error(`Failed to add loyalty program: ${response.statusText}`);
     }
 
-    // Create new loyalty program
-    const newProgram = await LoyaltyProgram.create(programData);
-    return newProgram;
+    return await response.json();
   } catch (error) {
     console.error("Error adding loyalty program:", error);
     throw error;
   }
 };
 
-// Get all loyalty programs
+// Get all loyalty programs - now using fetch API
 export const getAllLoyaltyPrograms = async () => {
   try {
-    const programs = await LoyaltyProgram.find({}).sort({ createdAt: -1 });
-    return programs;
+    const response = await fetch("http://localhost:3000/loyalty-programs");
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch loyalty programs: ${response.statusText}`,
+      );
+    }
+
+    return await response.json();
   } catch (error) {
     console.error("Error fetching loyalty programs:", error);
     throw error;
   }
 };
 
-// Get a specific loyalty program by ID
+// Get a specific loyalty program by ID - now using fetch API
 export const getLoyaltyProgramById = async (programId: string) => {
   try {
-    const program = await LoyaltyProgram.findOne({ programId });
-    if (!program) {
-      throw new Error("Loyalty program not found");
+    const response = await fetch(
+      `http://localhost:3000/loyalty-programs/${programId}`,
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch loyalty program: ${response.statusText}`,
+      );
     }
-    return program;
+
+    return await response.json();
   } catch (error) {
     console.error("Error fetching loyalty program:", error);
     throw error;
   }
 };
 
-// Update a loyalty program
+// Update a loyalty program - now using fetch API
 export const updateLoyaltyProgram = async (
   programId: string,
   updateData: Partial<LoyaltyProgramData>,
 ) => {
   try {
-    const updatedProgram = await LoyaltyProgram.findOneAndUpdate(
-      { programId },
-      { $set: updateData },
-      { new: true },
+    const response = await fetch(
+      `http://localhost:3000/loyalty-programs/${programId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      },
     );
 
-    if (!updatedProgram) {
-      throw new Error("Loyalty program not found");
+    if (!response.ok) {
+      throw new Error(
+        `Failed to update loyalty program: ${response.statusText}`,
+      );
     }
 
-    return updatedProgram;
+    return await response.json();
   } catch (error) {
     console.error("Error updating loyalty program:", error);
     throw error;
   }
 };
 
-// Delete a loyalty program
+// Delete a loyalty program - now using fetch API
 export const deleteLoyaltyProgram = async (programId: string) => {
   try {
-    const result = await LoyaltyProgram.findOneAndDelete({ programId });
+    const response = await fetch(
+      `http://localhost:3000/loyalty-programs/${programId}`,
+      {
+        method: "DELETE",
+      },
+    );
 
-    if (!result) {
-      throw new Error("Loyalty program not found");
+    if (!response.ok) {
+      throw new Error(
+        `Failed to delete loyalty program: ${response.statusText}`,
+      );
     }
 
     return { success: true, message: "Loyalty program deleted successfully" };

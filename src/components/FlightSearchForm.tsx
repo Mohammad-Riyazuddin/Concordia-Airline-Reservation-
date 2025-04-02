@@ -35,7 +35,7 @@ const FlightSearchForm: React.FC<FlightSearchFormProps> = ({
     }
 
     // Construct the URL with query parameters
-    const searchUrl = `/flights?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
+    const searchUrl = `http://localhost:3000/flights?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
 
     // Navigate to the search URL or call the API
     window.location.href = searchUrl;

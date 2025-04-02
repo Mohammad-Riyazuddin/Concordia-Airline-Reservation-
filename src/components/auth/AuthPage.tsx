@@ -25,7 +25,7 @@ const AuthPage = () => {
     try {
       setIsLoading(true);
       // Determine if it's an admin login based on the active tab
-      const endpoint = "/login";
+      const endpoint = "http://localhost:3000/login";
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -75,7 +75,10 @@ const AuthPage = () => {
     try {
       setIsLoading(true);
       // Determine endpoint based on role
-      const endpoint = data.role === "admin" ? "/admin/register" : "/register";
+      const endpoint =
+        data.role === "admin"
+          ? "http://localhost:3000/admin/register"
+          : "http://localhost:3000/register";
 
       const response = await fetch(endpoint, {
         method: "POST",

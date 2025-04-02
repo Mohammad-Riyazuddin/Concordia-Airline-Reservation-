@@ -1,13 +1,6 @@
-import mongoose from "mongoose";
-
-const MONGODB_URI = import.meta.env.VITE_MONGODB_URI || "";
+// This file is kept as a placeholder but MongoDB connection is removed
+// as the application is now frontend-only with API calls to a backend
 
 export const connectDB = async () => {
-  try {
-    await mongoose.connect(MONGODB_URI);
-    console.log("MongoDB Connected");
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
-    process.exit(1);
-  }
+  console.log("MongoDB connection removed - using external API instead");
 };

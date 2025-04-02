@@ -1,28 +1,11 @@
-import mongoose from "mongoose";
+// This file is kept as a placeholder but Mongoose model is removed
+// as the application is now frontend-only with API calls to a backend
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  role: {
-    type: String,
-    enum: ["customer", "admin"],
-    default: "customer",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-export const User = mongoose.models.User || mongoose.model("User", userSchema);
+export interface User {
+  _id?: string;
+  name: string;
+  email: string;
+  password?: string;
+  role: "customer" | "admin";
+  createdAt?: Date;
+}

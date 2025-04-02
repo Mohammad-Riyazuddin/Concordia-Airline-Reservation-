@@ -1,68 +1,99 @@
-import { User } from "../models/User";
-import { hashPassword, comparePassword, generateToken } from "../lib/auth";
-
-// User registration endpoint: /register
+// User registration endpoint: /register - now using fetch API
 export const register = async (
   name: string,
   email: string,
   password: string,
 ) => {
-  // Check if user already exists
-  const existingUser = await User.findOne({ email });
-  if (existingUser) throw new Error("User already exists");
+  try {
+    const response = await fetch("http://localhost:3000/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password, role: "customer" }),
+    });
 
-  const hashedPassword = await hashPassword(password);
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role: "customer",
-  });
-  const token = generateToken(user._id, user.role);
-  return { user, token };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Registration failed");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Registration error:", error);
+    throw error;
+  }
 };
 
-// User login endpoint: /login
+// User login endpoint: /login - now using fetch API
 export const login = async (email: string, password: string) => {
-  const user = await User.findOne({ email });
-  if (!user) throw new Error("User not found");
+  try {
+    const response = await fetch("http://localhost:3000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const isValid = await comparePassword(password, user.password);
-  if (!isValid) throw new Error("Invalid password");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Login failed");
+    }
 
-  const token = generateToken(user._id, user.role);
-  return { user, token };
+    return await response.json();
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
 };
 
-// Admin registration endpoint: /admin/register
+// Admin registration endpoint: /admin/register - now using fetch API
 export const adminRegister = async (
   name: string,
   email: string,
   password: string,
 ) => {
-  // Check if admin already exists
-  const existingAdmin = await User.findOne({ email });
-  if (existingAdmin) throw new Error("Admin already exists");
+  try {
+    const response = await fetch("http://localhost:3000/admin/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password, role: "admin" }),
+    });
 
-  const hashedPassword = await hashPassword(password);
-  const admin = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role: "admin",
-  });
-  const token = generateToken(admin._id, admin.role);
-  return { user: admin, token };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Admin registration failed");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Admin registration error:", error);
+    throw error;
+  }
 };
 
-// Admin login endpoint: /admin/login
+// Admin login endpoint: /admin/login - now using fetch API
 export const adminLogin = async (email: string, password: string) => {
-  const admin = await User.findOne({ email, role: "admin" });
-  if (!admin) throw new Error("Admin not found");
+  try {
+    const response = await fetch("http://localhost:3000/admin/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const isValid = await comparePassword(password, admin.password);
-  if (!isValid) throw new Error("Invalid password");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Admin login failed");
+    }
 
-  const token = generateToken(admin._id, admin.role);
-  return { user: admin, token };
+    return await response.json();
+  } catch (error) {
+    console.error("Admin login error:", error);
+    throw error;
+  }
 };
