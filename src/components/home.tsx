@@ -57,6 +57,7 @@ const Home = () => {
       const searchUrl = `http://localhost:3000/flights?origin=${encodeURIComponent(params.origin)}&destination=${encodeURIComponent(params.destination)}`;
       console.log("Fetching from URL:", searchUrl);
 
+      // For testing, use a direct fetch to ensure we get the exact response
       const response = await fetch(searchUrl);
       if (!response.ok) {
         throw new Error(`Failed to search flights: ${response.statusText}`);
@@ -65,11 +66,17 @@ const Home = () => {
       const results = await response.json();
       console.log("API search results:", results);
 
-      // Use the results directly without transformation
-      setFlights(results);
+      // Make sure results is an array
+      const flightArray = Array.isArray(results) ? results : [results];
+      console.log("Processed flight array:", flightArray);
+
+      // Set flights and show results
+      setFlights(flightArray);
       setShowResults(true);
     } catch (error) {
       console.error("Error searching flights:", error);
+      // Show error message to user
+      alert("Error searching for flights. Please try again.");
     } finally {
       setIsLoading(false);
     }
