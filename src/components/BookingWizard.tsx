@@ -27,6 +27,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
   const [mealPreference, setMealPreference] = React.useState("regular");
   const [baggage, setBaggage] = React.useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = React.useState("");
+  const [totalPrice, setTotalPrice] = React.useState<number>(0);
 
   // Format date for display
   const formatDateTime = (dateTimeStr?: string) => {
@@ -43,6 +44,25 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
     }
     return dateTimeStr; // Return as is if not ISO format
   };
+
+  // Calculate baggage price
+  const calculateBaggagePrice = (selectedBaggage: string[]) => {
+    let price = 0;
+    if (selectedBaggage.includes("extra-bag-7kg")) {
+      price += 50;
+    }
+    if (selectedBaggage.includes("extra-bag-23kg")) {
+      price += 100;
+    }
+    return price;
+  };
+
+  // Update total price when baggage selection changes
+  React.useEffect(() => {
+    const basePrice = selectedFlight?.price || 0;
+    const baggagePrice = calculateBaggagePrice(baggage);
+    setTotalPrice(basePrice + baggagePrice);
+  }, [baggage, selectedFlight]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -67,7 +87,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                   <div className="text-right">
                     <p>Arrival: {formatDateTime(selectedFlight.arrivalTime)}</p>
                     <p className="font-medium text-green-700">
-                      ${selectedFlight.price.toFixed(2)}
+                      ${totalPrice.toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -136,62 +156,74 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-center space-x-4">
                     <Checkbox
-                      id="carry-on"
-                      checked={baggage.includes("carry-on")}
+                      id="extra-bag-7kg"
+                      checked={baggage.includes("extra-bag-7kg")}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setBaggage([...baggage, "carry-on"]);
-                        } else {
-                          setBaggage(baggage.filter((b) => b !== "carry-on"));
-                        }
-                      }}
-                    />
-                    <Label htmlFor="carry-on">
-                      Carry-on Baggage
-                      <p className="text-sm text-gray-500">
-                        1 piece up to 7kg (15lbs)
-                      </p>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <Checkbox
-                      id="checked-bag"
-                      checked={baggage.includes("checked-bag")}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setBaggage([...baggage, "checked-bag"]);
+                          setBaggage([...baggage, "extra-bag-7kg"]);
                         } else {
                           setBaggage(
-                            baggage.filter((b) => b !== "checked-bag"),
+                            baggage.filter((b) => b !== "extra-bag-7kg"),
                           );
                         }
                       }}
                     />
-                    <Label htmlFor="checked-bag">
-                      Checked Baggage
+                    <Label htmlFor="extra-bag-7kg">
+                      Extra Bag (7kg)
                       <p className="text-sm text-gray-500">
-                        1 piece up to 23kg (50lbs)
+                        Additional piece up to 7kg (15lbs)
+                        <span className="ml-2 font-medium text-blue-600">
+                          +$50.00
+                        </span>
                       </p>
                     </Label>
                   </div>
                   <div className="flex items-center space-x-4">
                     <Checkbox
-                      id="extra-bag"
-                      checked={baggage.includes("extra-bag")}
+                      id="extra-bag-23kg"
+                      checked={baggage.includes("extra-bag-23kg")}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setBaggage([...baggage, "extra-bag"]);
+                          setBaggage([...baggage, "extra-bag-23kg"]);
                         } else {
-                          setBaggage(baggage.filter((b) => b !== "extra-bag"));
+                          setBaggage(
+                            baggage.filter((b) => b !== "extra-bag-23kg"),
+                          );
                         }
                       }}
                     />
-                    <Label htmlFor="extra-bag">
-                      Extra Baggage
+                    <Label htmlFor="extra-bag-23kg">
+                      Extra Bag (23kg)
                       <p className="text-sm text-gray-500">
                         Additional piece up to 23kg (50lbs)
+                        <span className="ml-2 font-medium text-blue-600">
+                          +$100.00
+                        </span>
                       </p>
                     </Label>
+                  </div>
+
+                  <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+                    <div className="flex justify-between">
+                      <p className="font-medium">Base ticket price:</p>
+                      <p>${selectedFlight?.price.toFixed(2) || "0.00"}</p>
+                    </div>
+                    {baggage.includes("extra-bag-7kg") && (
+                      <div className="flex justify-between">
+                        <p>Extra bag (7kg):</p>
+                        <p>+$50.00</p>
+                      </div>
+                    )}
+                    {baggage.includes("extra-bag-23kg") && (
+                      <div className="flex justify-between">
+                        <p>Extra bag (23kg):</p>
+                        <p>+$100.00</p>
+                      </div>
+                    )}
+                    <div className="flex justify-between mt-2 pt-2 border-t border-blue-200">
+                      <p className="font-bold">Total price:</p>
+                      <p className="font-bold">${totalPrice.toFixed(2)}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -230,6 +262,9 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                   mealPreference,
                   baggage,
                   specialRequests,
+                  totalPrice,
+                  baggagePrice: calculateBaggagePrice(baggage),
+                  basePrice: selectedFlight?.price,
                 })
               }
               disabled={!selectedSeat}
