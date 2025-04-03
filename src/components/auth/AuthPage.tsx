@@ -56,8 +56,18 @@ const AuthPage = () => {
         const customerData = {
           ...userData.customer,
           role: "customer", // Explicitly set role for customer
+          userId:
+            userData.customer?.userId ||
+            userData.customer?.id ||
+            userData.userId ||
+            userData.id, // Ensure we capture userId in any format
         };
+        console.log("Storing customer data:", customerData);
         localStorage.setItem("user", JSON.stringify(customerData));
+        // Also store userId separately for easier access
+        if (customerData.userId) {
+          localStorage.setItem("userId", customerData.userId);
+        }
       }
 
       toast({

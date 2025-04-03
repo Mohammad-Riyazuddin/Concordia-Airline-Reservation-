@@ -147,8 +147,29 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
     };
 
     try {
-      // For demo purposes, using a mock customer ID
-      const customerId = "customer123";
+      // Get the customer ID from localStorage
+      let customerId = localStorage.getItem("userId");
+
+      // If userId is not directly stored, try to get it from the user object
+      if (!customerId) {
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          try {
+            const parsedUser = JSON.parse(userData);
+            customerId = parsedUser.userId || parsedUser.id;
+          } catch (error) {
+            console.error("Error parsing user data:", error);
+          }
+        }
+      }
+
+      // Fallback to a default ID if none is found (for development purposes)
+      if (!customerId) {
+        console.warn("No customer ID found in storage, using default");
+        customerId = "customer123";
+      }
+
+      console.log("Using customer ID for booking:", customerId);
       const response = await bookFlight(customerId, bookingPayload);
 
       setBookingResponse(response);
