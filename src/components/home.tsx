@@ -70,8 +70,29 @@ const Home = () => {
       const flightArray = Array.isArray(results) ? results : [results];
       console.log("Processed flight array:", flightArray);
 
+      // Fix the availableSeats issue if needed
+      const fixedFlights = flightArray.map((flight) => {
+        // Make sure availableSeats is properly formatted
+        if (flight.availableSeats) {
+          const fixedSeats = flight.availableSeats.map((seat) => {
+            // Fix swapped seatNumber and class if needed
+            if (seat.seatNumber === "Economy" && seat.class.startsWith("A")) {
+              return {
+                seatNumber: seat.class,
+                class: "Economy",
+                isOccupied: seat.isOccupied,
+              };
+            }
+            return seat;
+          });
+          return { ...flight, availableSeats: fixedSeats };
+        }
+        return flight;
+      });
+
+      console.log("Fixed flights:", fixedFlights);
       // Set flights and show results
-      setFlights(flightArray);
+      setFlights(fixedFlights);
       setShowResults(true);
     } catch (error) {
       console.error("Error searching flights:", error);

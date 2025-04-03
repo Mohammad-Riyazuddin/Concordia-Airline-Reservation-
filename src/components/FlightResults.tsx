@@ -51,6 +51,8 @@ const FlightResults: React.FC<FlightResultsProps> = ({
     }
   };
 
+  console.log("Flights received in FlightResults:", flights);
+
   // Filter flights based on selected criteria
   const filteredFlights = flights.filter((flight) => {
     // Skip filtering if flight data is missing required properties
@@ -160,19 +162,7 @@ const FlightResults: React.FC<FlightResultsProps> = ({
           {filteredFlights.length > 0 ? (
             filteredFlights.map((flight, index) => {
               console.log("Rendering flight:", flight);
-              // Handle both FlightData and FlightResponse interfaces
-              const departureAirport =
-                "departureAirport" in flight
-                  ? flight.departureAirport
-                  : flight.origin;
-              const arrivalAirport =
-                "arrivalAirport" in flight
-                  ? flight.arrivalAirport
-                  : flight.destination;
-              const duration =
-                "duration" in flight
-                  ? flight.duration
-                  : `${calculateDuration(flight.departureTime, flight.arrivalTime)}h 00m`;
+              // Simplify to just use the fields we have in the API response
 
               return (
                 <FlightCard
@@ -189,10 +179,9 @@ const FlightResults: React.FC<FlightResultsProps> = ({
                       ? formatDateTime(flight.arrivalTime)
                       : "Unknown"
                   }
-                  duration={duration}
+                  origin={flight.origin || "Unknown"}
+                  destination={flight.destination || "Unknown"}
                   price={flight.price || 0}
-                  departureAirport={departureAirport || "Unknown"}
-                  arrivalAirport={arrivalAirport || "Unknown"}
                   onSelect={() => onFlightSelect(flight)}
                 />
               );

@@ -8,22 +8,20 @@ interface FlightCardProps {
   flightNumber?: string;
   departureTime?: string;
   arrivalTime?: string;
-  duration?: string;
+  origin?: string;
+  destination?: string;
   price?: number;
-  departureAirport?: string;
-  arrivalAirport?: string;
   onSelect?: () => void;
 }
 
 const FlightCard = ({
-  airline = "Sample Airlines",
-  flightNumber = "SA123",
-  departureTime = "10:00 AM",
-  arrivalTime = "12:00 PM",
-  duration = "2h 00m",
-  price = 299.99,
-  departureAirport = "JFK",
-  arrivalAirport = "LAX",
+  airline = "Unknown Airline",
+  flightNumber = "Unknown",
+  departureTime = "Unknown",
+  arrivalTime = "Unknown",
+  origin = "Unknown",
+  destination = "Unknown",
+  price = 0,
   onSelect = () => console.log("Flight selected"),
 }: FlightCardProps) => {
   return (
@@ -47,18 +45,12 @@ const FlightCard = ({
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
                   <p className="text-xl font-bold">{departureTime}</p>
-                  <p className="text-sm text-gray-500">{departureAirport}</p>
+                  <p className="text-sm text-gray-500">{origin}</p>
                 </div>
                 <div className="flex items-center space-x-2 mt-2">
                   <p className="text-xl font-bold">{arrivalTime}</p>
-                  <p className="text-sm text-gray-500">{arrivalAirport}</p>
+                  <p className="text-sm text-gray-500">{destination}</p>
                 </div>
-              </div>
-
-              {/* Duration */}
-              <div className="flex items-center space-x-2 px-4 py-2 bg-gray-50 rounded-lg">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600">{duration}</span>
               </div>
             </div>
           </div>
