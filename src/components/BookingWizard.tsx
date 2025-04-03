@@ -1,5 +1,12 @@
-import React from "react";
-import { Dialog, DialogContent } from "./ui/dialog";
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
+} from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import SeatMap from "./SeatMap";
@@ -8,7 +15,23 @@ import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { FlightData } from "../api/flights";
+import {
+  FlightData,
+  bookFlight,
+  BookFlightPayload,
+  BookingResponse,
+  processPayment,
+} from "../api/flights";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 interface BookingWizardProps {
   isOpen?: boolean;
@@ -28,6 +51,20 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
   const [baggage, setBaggage] = React.useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = React.useState("");
   const [totalPrice, setTotalPrice] = React.useState<number>(0);
+
+  // New states for booking flow
+  const [isBookingInProgress, setIsBookingInProgress] = useState(false);
+  const [bookingResponse, setBookingResponse] =
+    useState<BookingResponse | null>(null);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentFormData, setPaymentFormData] = useState({
+    cardNumber: "",
+    cvv: "",
+    expiryDate: "",
+  });
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentTransactionId, setPaymentTransactionId] = useState("");
 
   // Format date for display
   const formatDateTime = (dateTimeStr?: string) => {
@@ -63,6 +100,65 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
     const baggagePrice = calculateBaggagePrice(baggage);
     setTotalPrice(basePrice + baggagePrice);
   }, [baggage, selectedFlight]);
+
+  // Handle booking submission
+  const handleBookingSubmit = async () => {
+    if (!selectedFlight || !selectedSeat) return;
+
+    setIsBookingInProgress(true);
+
+    // Find the selected seat details
+    const seatDetails = selectedFlight.availableSeats.find(
+      (seat) => seat.seatNumber === selectedSeat,
+    );
+
+    if (!seatDetails) {
+      console.error("Selected seat not found");
+      setIsBookingInProgress(false);
+      return;
+    }
+
+    // Map baggage options to API payload format
+    const baggagePayload = [];
+
+    if (baggage.includes("extra-bag-7kg")) {
+      baggagePayload.push({
+        type: "Carry-on",
+        weight: 7,
+      });
+    }
+
+    if (baggage.includes("extra-bag-23kg")) {
+      baggagePayload.push({
+        type: "Suitcase",
+        weight: 23,
+      });
+    }
+
+    // Prepare booking payload
+    const bookingPayload: BookFlightPayload = {
+      flightNumber: selectedFlight.flightNumber,
+      seatNumber: selectedSeat,
+      seatClass: seatDetails.class,
+      mealType: mealPreference,
+      specialRequestType: specialRequests ? "Other" : undefined,
+      specialRequestNote: specialRequests || undefined,
+      baggage: baggagePayload,
+    };
+
+    try {
+      // For demo purposes, using a mock customer ID
+      const customerId = "customer123";
+      const response = await bookFlight(customerId, bookingPayload);
+
+      setBookingResponse(response);
+      setShowPaymentDialog(true);
+    } catch (error) {
+      console.error("Error booking flight:", error);
+    } finally {
+      setIsBookingInProgress(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -255,21 +351,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
               Cancel
             </Button>
             <Button
-              onClick={() =>
-                onComplete({
-                  selectedSeat,
-                  flightNumber: selectedFlight?.flightNumber,
-                  mealPreference,
-                  baggage,
-                  specialRequests,
-                  totalPrice,
-                  baggagePrice: calculateBaggagePrice(baggage),
-                  basePrice: selectedFlight?.price,
-                })
-              }
-              disabled={!selectedSeat}
+              onClick={handleBookingSubmit}
+              disabled={!selectedSeat || isBookingInProgress}
             >
-              Complete Booking
+              {isBookingInProgress ? "Processing..." : "Complete Booking"}
             </Button>
           </div>
         </Tabs>

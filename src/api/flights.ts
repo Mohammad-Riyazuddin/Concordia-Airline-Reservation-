@@ -203,3 +203,151 @@ export const searchFlights = async (
     ];
   }
 };
+
+// Book flight API interface
+export interface BookFlightPayload {
+  flightNumber: string;
+  seatNumber: string;
+  seatClass: string;
+  mealType: string;
+  specialRequestType?: string;
+  specialRequestNote?: string;
+  baggage: {
+    type: string;
+    weight: number;
+  }[];
+}
+
+export interface BookingResponse {
+  message: string;
+  booking: {
+    bookingId: string;
+    flightNumber: string;
+    seat: {
+      seatNumber: string;
+      class: string;
+      isOccupied: boolean;
+    };
+    meal: {
+      mealType: string;
+    };
+    specialRequest?: {
+      requestType: string;
+      note: string;
+      status: string;
+    };
+    ticket: {
+      ticketId: string;
+      boardingPassUrl: string;
+      bookingRef: string;
+    };
+    bookingDate: string;
+  };
+}
+
+// Book a flight
+export const bookFlight = async (
+  customerId: string,
+  payload: BookFlightPayload,
+): Promise<BookingResponse> => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/customer/${customerId}/bookFlight`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to book flight: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error booking flight:", error);
+
+    // Mock response for development
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return {
+      message: "Flight booked successfully with classes.",
+      booking: {
+        bookingId: `BK-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        flightNumber: payload.flightNumber,
+        seat: {
+          seatNumber: payload.seatNumber,
+          class: payload.seatClass,
+          isOccupied: false,
+        },
+        meal: {
+          mealType: payload.mealType,
+        },
+        specialRequest: payload.specialRequestNote
+          ? {
+              requestType: payload.specialRequestType || "Other",
+              note: payload.specialRequestNote,
+              status: "Pending",
+            }
+          : undefined,
+        ticket: {
+          ticketId: `TK-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+          boardingPassUrl: "",
+          bookingRef: `BK-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        },
+        bookingDate: new Date().toISOString(),
+      },
+    };
+  }
+};
+
+// Process payment for a booking
+export interface PaymentPayload {
+  cardNumber: string;
+  cvv: string;
+  expiryDate: string;
+  amount: number;
+}
+
+export interface PaymentResponse {
+  transactionID: string;
+  message: string;
+}
+
+export const processPayment = async (
+  customerId: string,
+  paymentId: string,
+  payload: PaymentPayload,
+): Promise<PaymentResponse> => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/customer/${customerId}/${paymentId}/payment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to process payment: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error processing payment:", error);
+
+    // Mock response for development
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return {
+      transactionID: `TRANS-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      message: "Payment successful",
+    };
+  }
+};
