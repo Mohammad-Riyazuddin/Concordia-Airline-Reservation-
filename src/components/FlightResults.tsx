@@ -17,7 +17,6 @@ const FlightResults: React.FC<FlightResultsProps> = ({
   const [departureTimeRange, setDepartureTimeRange] = useState<
     [number, number]
   >([0, 24]);
-  const [durationRange, setDurationRange] = useState<[number, number]>([0, 24]);
 
   // Get unique airlines from flights for the filter
   const airlines = [...new Set(flights.map((flight) => flight.airline))].map(
@@ -83,7 +82,6 @@ const FlightResults: React.FC<FlightResultsProps> = ({
 
     // Only apply time filters if we have valid time strings
     let isInTimeRange = true;
-    let isInDurationRange = true;
 
     if (departureTime && arrivalTime) {
       // Extract hour from departure time
@@ -92,23 +90,14 @@ const FlightResults: React.FC<FlightResultsProps> = ({
         isInTimeRange =
           departureHour >= departureTimeRange[0] &&
           departureHour <= departureTimeRange[1];
-
-        // Calculate duration
-        const durationHours = calculateDuration(departureTime, arrivalTime);
-        isInDurationRange =
-          durationHours >= durationRange[0] &&
-          durationHours <= durationRange[1];
       } catch (error) {
         console.error("Error processing time filters:", error);
         // Default to true if there's an error processing times
         isInTimeRange = true;
-        isInDurationRange = true;
       }
     }
 
-    return (
-      isInPriceRange && isAirlineSelected && isInTimeRange && isInDurationRange
-    );
+    return isInPriceRange && isAirlineSelected && isInTimeRange;
   });
 
   // Format date for display
@@ -144,8 +133,6 @@ const FlightResults: React.FC<FlightResultsProps> = ({
         }}
         departureTimeRange={departureTimeRange}
         onDepartureTimeChange={setDepartureTimeRange}
-        durationRange={durationRange}
-        onDurationChange={setDurationRange}
       />
 
       <div className="flex-1 space-y-4">

@@ -18,8 +18,6 @@ interface FilterSidebarProps {
   onAirlineChange?: (airlineId: string) => void;
   departureTimeRange?: [number, number];
   onDepartureTimeChange?: (value: [number, number]) => void;
-  durationRange?: [number, number];
-  onDurationChange?: (value: [number, number]) => void;
 }
 
 const defaultAirlines: Airline[] = [
@@ -38,8 +36,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onAirlineChange = () => {},
   departureTimeRange = [0, 24],
   onDepartureTimeChange = () => {},
-  durationRange = [0, 24],
-  onDurationChange = () => {},
 }) => {
   return (
     <Card className="w-[280px] p-4 bg-white">
@@ -95,23 +91,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
             <div className="flex justify-between text-sm text-gray-600">
               <span>{departureTimeRange[0]}:00</span>
               <span>{departureTimeRange[1]}:00</span>
-            </div>
-          </div>
-
-          {/* Flight Duration Filter */}
-          <div className="space-y-2">
-            <h3 className="font-semibold">Flight Duration</h3>
-            <Slider
-              defaultValue={durationRange}
-              max={24}
-              step={1}
-              onValueChange={(value) =>
-                onDurationChange(value as [number, number])
-              }
-            />
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>{durationRange[0]}h</span>
-              <span>{durationRange[1]}h</span>
             </div>
           </div>
         </div>
