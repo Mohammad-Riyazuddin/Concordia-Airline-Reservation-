@@ -183,7 +183,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
 
       setCustomerId(customerIdFromStorage);
       console.log("Using customer ID for booking:", customerIdFromStorage);
-      const response = await bookFlight(customerId, bookingPayload);
+      const response = await bookFlight(customerIdFromStorage, bookingPayload);
 
       setBookingResponse(response);
       setShowPaymentDialog(true);
