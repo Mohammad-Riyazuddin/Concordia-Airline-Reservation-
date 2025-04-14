@@ -256,12 +256,20 @@ const Home = () => {
                   Welcome, {user.name}
                 </span>
                 {user.role === "admin" && (
-                  <Link
-                    to="/admin/dashboard"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                  >
-                    Admin Dashboard
-                  </Link>
+                  <div className="flex space-x-2">
+                    <Link
+                      to="/admin/dashboard"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Admin Dashboard
+                    </Link>
+                    <Link
+                      to="/admin/flights"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Manage Flights
+                    </Link>
+                  </div>
                 )}
                 <Button
                   variant="outline"

@@ -4,8 +4,11 @@ import Home from "./components/home";
 import AuthPage from "./components/auth/AuthPage";
 import routes from "tempo-routes";
 
-// Lazy load the admin dashboard for better performance
+// Lazy load the admin components for better performance
 const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
+const FlightManagement = lazy(
+  () => import("./components/admin/FlightManagement"),
+);
 
 // Simple auth check function
 const isAuthenticated = () => {
@@ -62,6 +65,12 @@ function App() {
             path="/admin/dashboard/*"
             element={
               <ProtectedRoute element={<AdminDashboard />} adminOnly={true} />
+            }
+          />
+          <Route
+            path="/admin/flights"
+            element={
+              <ProtectedRoute element={<FlightManagement />} adminOnly={true} />
             }
           />
           {import.meta.env.VITE_TEMPO === "true" && (
