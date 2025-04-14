@@ -42,6 +42,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
+import { Loader2 } from "lucide-react";
 
 interface BookingWizardProps {
   isOpen?: boolean;
@@ -77,6 +78,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
   const [paymentTransactionId, setPaymentTransactionId] = useState("");
   const [isPaymentInProgress, setIsPaymentInProgress] = useState(false);
   const [customerId, setCustomerId] = useState<string>("");
+  const [showBookingDetails, setShowBookingDetails] = useState(false);
 
   // Format date for display
   const formatDateTime = (dateTimeStr?: string) => {
@@ -118,6 +120,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
     if (!selectedFlight || !selectedSeat) return;
 
     setIsBookingInProgress(true);
+    setShowBookingDetails(true);
 
     // Find the selected seat details
     const seatDetails = selectedFlight.availableSeats.find(
@@ -187,11 +190,6 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
 
       console.log("Booking response received:", response);
       setBookingResponse(response);
-      setShowPaymentDialog(true);
-      // Force a re-render by setting a timeout
-      setTimeout(() => {
-        setShowPaymentDialog(true);
-      }, 100);
     } catch (error) {
       console.error("Error booking flight:", error);
     } finally {
@@ -447,45 +445,32 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
         </Tabs>
       </DialogContent>
 
-      {/* Payment Dialog */}
-      {showPaymentDialog && bookingResponse ? (
+      {/* Booking Details Dialog */}
+      {showBookingDetails && (
         <AlertDialog
-          open={showPaymentDialog}
-          onOpenChange={setShowPaymentDialog}
+          open={showBookingDetails}
+          onOpenChange={setShowBookingDetails}
         >
           <AlertDialogContent className="max-w-md bg-white">
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {paymentSuccess
-                  ? "Payment Successful"
-                  : "Complete Your Payment"}
+                {isBookingInProgress
+                  ? "Processing Your Booking"
+                  : "Booking Confirmed"}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                {paymentSuccess ? (
-                  <div className="space-y-4">
-                    <p>Your payment has been processed successfully!</p>
-                    <p>Transaction ID: {paymentTransactionId}</p>
-                    <div className="bg-green-50 p-4 rounded-md border border-green-200">
-                      <h3 className="font-medium text-green-800 mb-2">
-                        Booking Details
-                      </h3>
-                      <p>
-                        Booking Reference:{" "}
-                        {bookingResponse.booking.ticket.bookingRef}
-                      </p>
-                      <p>Flight: {bookingResponse.booking.flightNumber}</p>
-                      <p>
-                        Seat: {bookingResponse.booking.seat.seatNumber} (
-                        {bookingResponse.booking.seat.class})
-                      </p>
-                      <p>Meal: {bookingResponse.booking.meal.mealType}</p>
-                    </div>
+                {isBookingInProgress ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
+                    <p className="text-center">
+                      Please wait while we process your booking...
+                    </p>
                   </div>
-                ) : (
+                ) : bookingResponse ? (
                   <div className="space-y-4">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Booking Summary</CardTitle>
+                        <CardTitle>Booking Details</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
@@ -561,20 +546,15 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                       </div>
                     </div>
                   </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <p>No booking information available.</p>
+                  </div>
                 )}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              {paymentSuccess ? (
-                <AlertDialogAction
-                  onClick={() => {
-                    setShowPaymentDialog(false);
-                    onClose();
-                  }}
-                >
-                  Close
-                </AlertDialogAction>
-              ) : (
+              {!isBookingInProgress && bookingResponse ? (
                 <>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
@@ -586,14 +566,73 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                       !paymentFormData.expiryDate
                     }
                   >
-                    {isPaymentInProgress ? "Processing..." : "Make Payment"}
+                    {isPaymentInProgress ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Make Payment"
+                    )}
                   </AlertDialogAction>
                 </>
+              ) : (
+                <AlertDialogCancel>Close</AlertDialogCancel>
               )}
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      ) : null}
+      )}
+
+      {/* Payment Success Dialog */}
+      {paymentSuccess && bookingResponse && (
+        <AlertDialog
+          open={paymentSuccess}
+          onOpenChange={(open) => {
+            if (!open) {
+              setPaymentSuccess(false);
+              onClose();
+            }
+          }}
+        >
+          <AlertDialogContent className="max-w-md bg-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Payment Successful</AlertDialogTitle>
+              <AlertDialogDescription>
+                <div className="space-y-4">
+                  <p>Your payment has been processed successfully!</p>
+                  <p>Transaction ID: {paymentTransactionId}</p>
+                  <div className="bg-green-50 p-4 rounded-md border border-green-200">
+                    <h3 className="font-medium text-green-800 mb-2">
+                      Booking Details
+                    </h3>
+                    <p>
+                      Booking Reference:{" "}
+                      {bookingResponse.booking.ticket.bookingRef}
+                    </p>
+                    <p>Flight: {bookingResponse.booking.flightNumber}</p>
+                    <p>
+                      Seat: {bookingResponse.booking.seat.seatNumber} (
+                      {bookingResponse.booking.seat.class})
+                    </p>
+                    <p>Meal: {bookingResponse.booking.meal.mealType}</p>
+                  </div>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction
+                onClick={() => {
+                  setPaymentSuccess(false);
+                  onClose();
+                }}
+              >
+                Close
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </Dialog>
   );
 };

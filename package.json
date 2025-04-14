@@ -51,6 +51,7 @@
     "embla-carousel-react": "^8.1.5",
     "framer-motion": "^11.18.0",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.1",
     "lucide-react": "^0.394.0",
     "mongodb": "^6.13.1",
     "mongoose": "^8.10.1",
