@@ -66,7 +66,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
   const [isBookingInProgress, setIsBookingInProgress] = useState(false);
   const [bookingResponse, setBookingResponse] =
     useState<BookingResponse | null>(null);
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState<boolean>(false);
   const [paymentFormData, setPaymentFormData] = useState({
     cardNumber: "",
     cvv: "",
@@ -185,8 +185,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
       console.log("Using customer ID for booking:", customerIdFromStorage);
       const response = await bookFlight(customerIdFromStorage, bookingPayload);
 
+      console.log("Booking response received:", response);
       setBookingResponse(response);
       setShowPaymentDialog(true);
+      // Force a re-render by setting a timeout
+      setTimeout(() => {
+        setShowPaymentDialog(true);
+      }, 100);
     } catch (error) {
       console.error("Error booking flight:", error);
     } finally {
@@ -443,7 +448,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
       </DialogContent>
 
       {/* Payment Dialog */}
-      {showPaymentDialog && bookingResponse && (
+      {showPaymentDialog && bookingResponse ? (
         <AlertDialog
           open={showPaymentDialog}
           onOpenChange={setShowPaymentDialog}
@@ -588,7 +593,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      )}
+      ) : null}
     </Dialog>
   );
 };
