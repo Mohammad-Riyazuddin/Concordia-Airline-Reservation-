@@ -220,6 +220,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
       setPaymentTransactionId(response.transactionID);
       setPaymentDetails(response.paymentDetails);
       setPaymentSuccess(true);
+      setShowBookingDetails(false); // Close the booking details dialog
 
       // Call onComplete with the booking and payment data
       if (onComplete) {
@@ -599,7 +600,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
 
       {/* Payment Success Dialog */}
       {paymentSuccess && bookingResponse && (
-        <AlertDialog
+        <Dialog
           open={paymentSuccess}
           onOpenChange={(open) => {
             if (!open) {
@@ -608,79 +609,155 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
             }
           }}
         >
-          <AlertDialogContent className="max-w-md bg-white">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Payment Successful</AlertDialogTitle>
-              <AlertDialogDescription>
-                <div className="space-y-4">
-                  <p>Your payment has been processed successfully!</p>
-
-                  <div className="bg-green-50 p-4 rounded-md border border-green-200">
-                    <h3 className="font-medium text-green-800 mb-2">
-                      Payment Details
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <p className="font-medium">Transaction ID:</p>
-                      <p>{paymentTransactionId}</p>
-
-                      {paymentDetails && (
-                        <>
-                          <p className="font-medium">Amount Paid:</p>
-                          <p>${paymentDetails.paymentAmount.toFixed(2)}</p>
-
-                          <p className="font-medium">Payment Date:</p>
-                          <p>
-                            {new Date(paymentDetails.date).toLocaleString()}
-                          </p>
-                        </>
-                      )}
+          <DialogContent className="w-[90vw] max-w-3xl bg-white p-6 max-h-[90vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-green-700 mb-2">
+                Payment Successful
+              </DialogTitle>
+              <DialogDescription>
+                <div className="space-y-6 mt-4">
+                  <div className="bg-green-50 p-6 rounded-lg border border-green-200 shadow-sm">
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="bg-green-100 p-3 rounded-full">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-8 w-8 text-green-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
+                    <p className="text-center text-lg font-medium mb-6">
+                      Your payment has been processed successfully!
+                    </p>
 
-                  <div className="bg-green-50 p-4 rounded-md border border-green-200">
-                    <h3 className="font-medium text-green-800 mb-2">
-                      Booking Details
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <p className="font-medium">Booking Reference:</p>
-                      <p>{bookingResponse.booking.ticket.bookingRef}</p>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <Card className="border-green-200">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg font-medium text-green-800">
+                            Payment Details
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center border-b border-green-100 pb-2">
+                              <p className="font-medium text-gray-600">
+                                Transaction ID:
+                              </p>
+                              <p className="font-mono text-sm bg-green-50 px-2 py-1 rounded">
+                                {paymentTransactionId}
+                              </p>
+                            </div>
 
-                      <p className="font-medium">Flight:</p>
-                      <p>{bookingResponse.booking.flightNumber}</p>
+                            {paymentDetails && (
+                              <>
+                                <div className="flex justify-between items-center border-b border-green-100 pb-2">
+                                  <p className="font-medium text-gray-600">
+                                    Amount Paid:
+                                  </p>
+                                  <p className="font-bold text-green-700">
+                                    ${paymentDetails.paymentAmount.toFixed(2)}
+                                  </p>
+                                </div>
 
-                      <p className="font-medium">Seat:</p>
-                      <p>
-                        {bookingResponse.booking.seat.seatNumber} (
-                        {bookingResponse.booking.seat.class})
-                      </p>
+                                <div className="flex justify-between items-center">
+                                  <p className="font-medium text-gray-600">
+                                    Payment Date:
+                                  </p>
+                                  <p className="text-gray-800">
+                                    {new Date(
+                                      paymentDetails.date,
+                                    ).toLocaleString([], {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                      <p className="font-medium">Meal:</p>
-                      <p>{bookingResponse.booking.meal.mealType}</p>
+                      <Card className="border-green-200">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg font-medium text-green-800">
+                            Booking Details
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center border-b border-green-100 pb-2">
+                              <p className="font-medium text-gray-600">
+                                Booking Reference:
+                              </p>
+                              <p className="font-mono text-sm bg-green-50 px-2 py-1 rounded">
+                                {bookingResponse.booking.ticket.bookingRef}
+                              </p>
+                            </div>
+
+                            <div className="flex justify-between items-center border-b border-green-100 pb-2">
+                              <p className="font-medium text-gray-600">
+                                Flight:
+                              </p>
+                              <p className="text-gray-800">
+                                {bookingResponse.booking.flightNumber}
+                              </p>
+                            </div>
+
+                            <div className="flex justify-between items-center border-b border-green-100 pb-2">
+                              <p className="font-medium text-gray-600">Seat:</p>
+                              <p className="text-gray-800">
+                                {bookingResponse.booking.seat.seatNumber} (
+                                {bookingResponse.booking.seat.class})
+                              </p>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                              <p className="font-medium text-gray-600">Meal:</p>
+                              <p className="text-gray-800">
+                                {bookingResponse.booking.meal.mealType}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   </div>
 
                   <Button
-                    className="w-full mt-4"
-                    variant="outline"
+                    className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
                     onClick={() => {}}
                   >
                     Download Booking Details
                   </Button>
                 </div>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogAction
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6">
+              <Button
                 onClick={() => {
                   setPaymentSuccess(false);
                   onClose();
                 }}
+                variant="outline"
               >
                 Close
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </Dialog>
   );
