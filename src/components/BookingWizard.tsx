@@ -21,6 +21,8 @@ import {
   BookFlightPayload,
   BookingResponse,
   processPayment,
+  PaymentPayload,
+  PaymentResponse,
 } from "../api/flights";
 import {
   AlertDialog,
@@ -32,6 +34,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 interface BookingWizardProps {
   isOpen?: boolean;
@@ -65,6 +75,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
   const [paymentError, setPaymentError] = useState("");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentTransactionId, setPaymentTransactionId] = useState("");
+  const [isPaymentInProgress, setIsPaymentInProgress] = useState(false);
+  const [customerId, setCustomerId] = useState<string>("");
 
   // Format date for display
   const formatDateTime = (dateTimeStr?: string) => {
@@ -148,15 +160,15 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
 
     try {
       // Get the customer ID from localStorage
-      let customerId = localStorage.getItem("userId");
+      let customerIdFromStorage = localStorage.getItem("userId");
 
       // If userId is not directly stored, try to get it from the user object
-      if (!customerId) {
+      if (!customerIdFromStorage) {
         const userData = localStorage.getItem("user");
         if (userData) {
           try {
             const parsedUser = JSON.parse(userData);
-            customerId = parsedUser.userId || parsedUser.id;
+            customerIdFromStorage = parsedUser.userId || parsedUser.id;
           } catch (error) {
             console.error("Error parsing user data:", error);
           }
@@ -164,12 +176,13 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
       }
 
       // Fallback to a default ID if none is found (for development purposes)
-      if (!customerId) {
+      if (!customerIdFromStorage) {
         console.warn("No customer ID found in storage, using default");
-        customerId = "customer123";
+        customerIdFromStorage = "customer123";
       }
 
-      console.log("Using customer ID for booking:", customerId);
+      setCustomerId(customerIdFromStorage);
+      console.log("Using customer ID for booking:", customerIdFromStorage);
       const response = await bookFlight(customerId, bookingPayload);
 
       setBookingResponse(response);
@@ -179,6 +192,54 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
     } finally {
       setIsBookingInProgress(false);
     }
+  };
+
+  // Handle payment submission
+  const handlePaymentSubmit = async () => {
+    if (!bookingResponse || !customerId) return;
+
+    setIsPaymentInProgress(true);
+    setPaymentError("");
+
+    try {
+      const paymentPayload: PaymentPayload = {
+        cardNumber: paymentFormData.cardNumber,
+        cvv: paymentFormData.cvv,
+        expiryDate: paymentFormData.expiryDate,
+        amount: totalPrice,
+      };
+
+      const response = await processPayment(
+        customerId,
+        bookingResponse.booking.bookingId,
+        paymentPayload,
+      );
+
+      setPaymentTransactionId(response.transactionID);
+      setPaymentSuccess(true);
+
+      // Call onComplete with the booking and payment data
+      if (onComplete) {
+        onComplete({
+          booking: bookingResponse.booking,
+          payment: response,
+        });
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      setPaymentError("Failed to process payment. Please try again.");
+    } finally {
+      setIsPaymentInProgress(false);
+    }
+  };
+
+  // Handle payment form input changes
+  const handlePaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPaymentFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   return (
@@ -380,6 +441,154 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
           </div>
         </Tabs>
       </DialogContent>
+
+      {/* Payment Dialog */}
+      {showPaymentDialog && bookingResponse && (
+        <AlertDialog
+          open={showPaymentDialog}
+          onOpenChange={setShowPaymentDialog}
+        >
+          <AlertDialogContent className="max-w-md bg-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {paymentSuccess
+                  ? "Payment Successful"
+                  : "Complete Your Payment"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {paymentSuccess ? (
+                  <div className="space-y-4">
+                    <p>Your payment has been processed successfully!</p>
+                    <p>Transaction ID: {paymentTransactionId}</p>
+                    <div className="bg-green-50 p-4 rounded-md border border-green-200">
+                      <h3 className="font-medium text-green-800 mb-2">
+                        Booking Details
+                      </h3>
+                      <p>
+                        Booking Reference:{" "}
+                        {bookingResponse.booking.ticket.bookingRef}
+                      </p>
+                      <p>Flight: {bookingResponse.booking.flightNumber}</p>
+                      <p>
+                        Seat: {bookingResponse.booking.seat.seatNumber} (
+                        {bookingResponse.booking.seat.class})
+                      </p>
+                      <p>Meal: {bookingResponse.booking.meal.mealType}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Booking Summary</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>Flight:</span>
+                            <span className="font-medium">
+                              {bookingResponse.booking.flightNumber}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Seat:</span>
+                            <span className="font-medium">
+                              {bookingResponse.booking.seat.seatNumber} (
+                              {bookingResponse.booking.seat.class})
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Booking Reference:</span>
+                            <span className="font-medium">
+                              {bookingResponse.booking.ticket.bookingRef}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Total Amount:</span>
+                            <span className="font-medium">
+                              ${totalPrice.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Payment Details</h3>
+                      {paymentError && (
+                        <div className="bg-red-50 text-red-800 p-3 rounded-md border border-red-200 mb-3">
+                          {paymentError}
+                        </div>
+                      )}
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="cardNumber">Card Number</Label>
+                          <Input
+                            id="cardNumber"
+                            name="cardNumber"
+                            placeholder="1234 5678 9012 3456"
+                            value={paymentFormData.cardNumber}
+                            onChange={handlePaymentInputChange}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label htmlFor="expiryDate">Expiry Date</Label>
+                            <Input
+                              id="expiryDate"
+                              name="expiryDate"
+                              placeholder="MM/YY"
+                              value={paymentFormData.expiryDate}
+                              onChange={handlePaymentInputChange}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="cvv">CVV</Label>
+                            <Input
+                              id="cvv"
+                              name="cvv"
+                              placeholder="123"
+                              value={paymentFormData.cvv}
+                              onChange={handlePaymentInputChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              {paymentSuccess ? (
+                <AlertDialogAction
+                  onClick={() => {
+                    setShowPaymentDialog(false);
+                    onClose();
+                  }}
+                >
+                  Close
+                </AlertDialogAction>
+              ) : (
+                <>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handlePaymentSubmit}
+                    disabled={
+                      isPaymentInProgress ||
+                      !paymentFormData.cardNumber ||
+                      !paymentFormData.cvv ||
+                      !paymentFormData.expiryDate
+                    }
+                  >
+                    {isPaymentInProgress ? "Processing..." : "Make Payment"}
+                  </AlertDialogAction>
+                </>
+              )}
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </Dialog>
   );
 };
