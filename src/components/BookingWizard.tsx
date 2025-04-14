@@ -220,7 +220,10 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
 
       const response = await processPayment(customerId, paymentPayload);
 
-      setPaymentTransactionId(response.transactionID);
+      console.log("Payment response:", response);
+      setPaymentTransactionId(
+        response.transactionID || response.paymentDetails?.transactionId,
+      );
       setPaymentDetails(response.paymentDetails);
       setPaymentSuccess(true);
 

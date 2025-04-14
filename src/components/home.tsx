@@ -217,7 +217,9 @@ const Home = () => {
 
       doc.setFontSize(12);
       // Use the transaction ID directly from the payment API response
-      const transactionID = bookingData.payment.transactionID;
+      const transactionID =
+        bookingData.payment.transactionID ||
+        bookingData.payment.paymentDetails?.transactionId;
       doc.text(`Transaction ID: ${transactionID}`, 25, 175);
       doc.text(
         `Amount Paid: ${bookingData.payment.paymentDetails.paymentAmount.toFixed(2)}`,
@@ -407,7 +409,9 @@ const Home = () => {
                           <span className="font-semibold">Transaction ID:</span>
                         </p>
                         <p className="text-sm">
-                          {bookingDetails.payment.transactionID}
+                          {bookingDetails.payment.transactionID ||
+                            bookingDetails.payment.paymentDetails
+                              ?.transactionId}
                         </p>
                       </>
                     )}
