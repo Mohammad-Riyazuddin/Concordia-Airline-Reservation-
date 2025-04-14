@@ -38,9 +38,19 @@ const AdminLoginForm = () => {
 
       const data = await response.json();
 
-      // Store the token and user info in localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store the token and admin info in localStorage
+      localStorage.setItem("token", data.token || "");
+
+      // Store admin details from the new response format
+      if (data.admin) {
+        const adminData = {
+          ...data.admin,
+          role: "admin", // Explicitly set role as admin
+        };
+        localStorage.setItem("user", JSON.stringify(adminData));
+      } else if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
 
       // On successful login, redirect to admin dashboard
       navigate("/admin/dashboard");
