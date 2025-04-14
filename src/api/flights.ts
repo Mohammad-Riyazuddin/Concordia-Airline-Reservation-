@@ -306,10 +306,11 @@ export const bookFlight = async (
 
 // Process payment for a booking
 export interface PaymentPayload {
-  cardNumber: string;
+  flightNumber: string;
+  paymentAmount: number;
+  creditCardNumber: string;
   cvv: string;
-  expiryDate: string;
-  amount: number;
+  bookingId: string;
 }
 
 export interface PaymentResponse {
@@ -319,12 +320,11 @@ export interface PaymentResponse {
 
 export const processPayment = async (
   customerId: string,
-  paymentId: string,
   payload: PaymentPayload,
 ): Promise<PaymentResponse> => {
   try {
     const response = await fetch(
-      `http://localhost:3000/customer/${customerId}/${paymentId}/payment`,
+      `http://localhost:3000/customer/${customerId}/payment`,
       {
         method: "POST",
         headers: {

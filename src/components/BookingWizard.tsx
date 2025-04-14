@@ -206,17 +206,14 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
 
     try {
       const paymentPayload: PaymentPayload = {
-        cardNumber: paymentFormData.cardNumber,
+        flightNumber: bookingResponse.booking.flightNumber,
+        paymentAmount: totalPrice,
+        creditCardNumber: paymentFormData.cardNumber,
         cvv: paymentFormData.cvv,
-        expiryDate: paymentFormData.expiryDate,
-        amount: totalPrice,
+        bookingId: bookingResponse.booking.bookingId,
       };
 
-      const response = await processPayment(
-        customerId,
-        bookingResponse.booking.bookingId,
-        paymentPayload,
-      );
+      const response = await processPayment(customerId, paymentPayload);
 
       setPaymentTransactionId(response.transactionID);
       setPaymentSuccess(true);
