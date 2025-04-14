@@ -76,6 +76,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
   const [paymentError, setPaymentError] = useState("");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentTransactionId, setPaymentTransactionId] = useState("");
+  const [paymentDetails, setPaymentDetails] =
+    useState<PaymentResponse["paymentDetails"]>();
   const [isPaymentInProgress, setIsPaymentInProgress] = useState(false);
   const [customerId, setCustomerId] = useState<string>("");
   const [showBookingDetails, setShowBookingDetails] = useState(false);
@@ -216,6 +218,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
       const response = await processPayment(customerId, paymentPayload);
 
       setPaymentTransactionId(response.transactionID);
+      setPaymentDetails(response.paymentDetails);
       setPaymentSuccess(true);
 
       // Call onComplete with the booking and payment data
@@ -598,22 +601,58 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
               <AlertDialogDescription>
                 <div className="space-y-4">
                   <p>Your payment has been processed successfully!</p>
-                  <p>Transaction ID: {paymentTransactionId}</p>
+
+                  <div className="bg-green-50 p-4 rounded-md border border-green-200">
+                    <h3 className="font-medium text-green-800 mb-2">
+                      Payment Details
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <p className="font-medium">Transaction ID:</p>
+                      <p>{paymentTransactionId}</p>
+
+                      {paymentDetails && (
+                        <>
+                          <p className="font-medium">Amount Paid:</p>
+                          <p>${paymentDetails.paymentAmount.toFixed(2)}</p>
+
+                          <p className="font-medium">Payment Date:</p>
+                          <p>
+                            {new Date(paymentDetails.date).toLocaleString()}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="bg-green-50 p-4 rounded-md border border-green-200">
                     <h3 className="font-medium text-green-800 mb-2">
                       Booking Details
                     </h3>
-                    <p>
-                      Booking Reference:{" "}
-                      {bookingResponse.booking.ticket.bookingRef}
-                    </p>
-                    <p>Flight: {bookingResponse.booking.flightNumber}</p>
-                    <p>
-                      Seat: {bookingResponse.booking.seat.seatNumber} (
-                      {bookingResponse.booking.seat.class})
-                    </p>
-                    <p>Meal: {bookingResponse.booking.meal.mealType}</p>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <p className="font-medium">Booking Reference:</p>
+                      <p>{bookingResponse.booking.ticket.bookingRef}</p>
+
+                      <p className="font-medium">Flight:</p>
+                      <p>{bookingResponse.booking.flightNumber}</p>
+
+                      <p className="font-medium">Seat:</p>
+                      <p>
+                        {bookingResponse.booking.seat.seatNumber} (
+                        {bookingResponse.booking.seat.class})
+                      </p>
+
+                      <p className="font-medium">Meal:</p>
+                      <p>{bookingResponse.booking.meal.mealType}</p>
+                    </div>
                   </div>
+
+                  <Button
+                    className="w-full mt-4"
+                    variant="outline"
+                    onClick={() => {}}
+                  >
+                    Download Booking Details
+                  </Button>
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>

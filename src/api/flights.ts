@@ -316,6 +316,12 @@ export interface PaymentPayload {
 export interface PaymentResponse {
   transactionID: string;
   message: string;
+  paymentDetails?: {
+    flightNumber: string;
+    paymentAmount: number;
+    transactionId: string;
+    date: string;
+  };
 }
 
 export const processPayment = async (
@@ -345,9 +351,16 @@ export const processPayment = async (
     // Mock response for development
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    const transactionID = `TRANS-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     return {
-      transactionID: `TRANS-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      transactionID: transactionID,
       message: "Payment successful",
+      paymentDetails: {
+        flightNumber: payload.flightNumber,
+        paymentAmount: payload.paymentAmount,
+        transactionId: transactionID,
+        date: new Date().toISOString(),
+      },
     };
   }
 };
