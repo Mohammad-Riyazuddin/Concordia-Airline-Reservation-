@@ -503,48 +503,60 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                       </CardContent>
                     </Card>
 
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Payment Details</h3>
-                      {paymentError && (
-                        <div className="bg-red-50 text-red-800 p-3 rounded-md border border-red-200 mb-3">
-                          {paymentError}
-                        </div>
-                      )}
-                      <div className="space-y-3">
-                        <div className="space-y-1">
-                          <Label htmlFor="cardNumber">Card Number</Label>
-                          <Input
-                            id="cardNumber"
-                            name="cardNumber"
-                            placeholder="1234 5678 9012 3456"
-                            value={paymentFormData.cardNumber}
-                            onChange={handlePaymentInputChange}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
+                    {isPaymentInProgress ? (
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
+                        <p className="text-center font-medium">
+                          Processing your payment...
+                        </p>
+                        <p className="text-center text-sm text-gray-500 mt-2">
+                          Please do not close this window
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Payment Details</h3>
+                        {paymentError && (
+                          <div className="bg-red-50 text-red-800 p-3 rounded-md border border-red-200 mb-3">
+                            {paymentError}
+                          </div>
+                        )}
+                        <div className="space-y-3">
                           <div className="space-y-1">
-                            <Label htmlFor="expiryDate">Expiry Date</Label>
+                            <Label htmlFor="cardNumber">Card Number</Label>
                             <Input
-                              id="expiryDate"
-                              name="expiryDate"
-                              placeholder="MM/YY"
-                              value={paymentFormData.expiryDate}
+                              id="cardNumber"
+                              name="cardNumber"
+                              placeholder="1234 5678 9012 3456"
+                              value={paymentFormData.cardNumber}
                               onChange={handlePaymentInputChange}
                             />
                           </div>
-                          <div className="space-y-1">
-                            <Label htmlFor="cvv">CVV</Label>
-                            <Input
-                              id="cvv"
-                              name="cvv"
-                              placeholder="123"
-                              value={paymentFormData.cvv}
-                              onChange={handlePaymentInputChange}
-                            />
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label htmlFor="expiryDate">Expiry Date</Label>
+                              <Input
+                                id="expiryDate"
+                                name="expiryDate"
+                                placeholder="MM/YY"
+                                value={paymentFormData.expiryDate}
+                                onChange={handlePaymentInputChange}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="cvv">CVV</Label>
+                              <Input
+                                id="cvv"
+                                name="cvv"
+                                placeholder="123"
+                                value={paymentFormData.cvv}
+                                onChange={handlePaymentInputChange}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-4">
