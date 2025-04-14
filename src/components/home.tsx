@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from "./ui/dialog";
 import { CheckCircle } from "lucide-react";
-import { jsPDF } from "jspdf";
+import jsPDF from "jspdf";
 
 const Home = () => {
   const [searchParams, setSearchParams] = useState<FlightSearchParams | null>(
