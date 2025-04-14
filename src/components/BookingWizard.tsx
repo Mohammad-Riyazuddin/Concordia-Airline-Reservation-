@@ -206,6 +206,9 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
     setIsPaymentInProgress(true);
     setPaymentError("");
 
+    // Close the booking details dialog immediately
+    setShowBookingDetails(false);
+
     try {
       const paymentPayload: PaymentPayload = {
         flightNumber: bookingResponse.booking.flightNumber,
@@ -220,7 +223,6 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
       setPaymentTransactionId(response.transactionID);
       setPaymentDetails(response.paymentDetails);
       setPaymentSuccess(true);
-      setShowBookingDetails(false); // Close the booking details dialog
 
       // Call onComplete with the booking and payment data
       if (onComplete) {
@@ -232,6 +234,8 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
     } catch (error) {
       console.error("Payment error:", error);
       setPaymentError("Failed to process payment. Please try again.");
+      // Show booking details dialog again if there's an error
+      setShowBookingDetails(true);
     } finally {
       setIsPaymentInProgress(false);
     }
