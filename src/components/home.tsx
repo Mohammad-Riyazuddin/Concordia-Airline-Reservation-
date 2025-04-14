@@ -37,6 +37,8 @@ const Home = () => {
     if (userData) {
       try {
         const parsedUser = JSON.parse(userData);
+        console.log("User data from localStorage:", parsedUser);
+
         // Set default role to customer if not specified but has userId starting with 'cust'
         if (
           !parsedUser.role &&
@@ -45,6 +47,16 @@ const Home = () => {
         ) {
           parsedUser.role = "customer";
         }
+
+        // Set default role to admin if not specified but has userId starting with 'admin'
+        if (
+          !parsedUser.role &&
+          parsedUser.userId &&
+          parsedUser.userId.startsWith("admin")
+        ) {
+          parsedUser.role = "admin";
+        }
+
         setUser(parsedUser);
       } catch (error) {
         console.error("Error parsing user data:", error);
@@ -256,20 +268,12 @@ const Home = () => {
                   Welcome, {user.name}
                 </span>
                 {user.role === "admin" && (
-                  <div className="flex space-x-2">
-                    <Link
-                      to="/admin/dashboard"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      Admin Dashboard
-                    </Link>
-                    <Link
-                      to="/admin/flights"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      Manage Flights
-                    </Link>
-                  </div>
+                  <Link
+                    to="/admin/flights"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                  >
+                    Manage Flights
+                  </Link>
                 )}
                 <Button
                   variant="outline"

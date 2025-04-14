@@ -49,8 +49,20 @@ const AuthPage = () => {
 
       // Store user data and token in localStorage based on login type
       if (loginType === "admin") {
-        localStorage.setItem("token", userData.token);
-        localStorage.setItem("user", JSON.stringify(userData.user));
+        localStorage.setItem("token", userData.token || "");
+
+        // Handle the admin response format
+        if (userData.admin) {
+          const adminData = {
+            ...userData.admin,
+            role: "admin", // Explicitly set role for admin
+          };
+          console.log("Storing admin data:", adminData);
+          localStorage.setItem("user", JSON.stringify(adminData));
+        } else if (userData.user) {
+          // Fallback to old format if needed
+          localStorage.setItem("user", JSON.stringify(userData.user));
+        }
       } else {
         // For customer login with new response format
         const customerData = {
