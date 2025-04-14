@@ -6,6 +6,15 @@ import BookingWizard from "./BookingWizard";
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
 import { searchFlights, FlightSearchParams, FlightData } from "../api/flights";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "./ui/dialog";
+import { CheckCircle } from "lucide-react";
 
 const Home = () => {
   const [searchParams, setSearchParams] = useState<FlightSearchParams | null>(
@@ -17,6 +26,8 @@ const Home = () => {
   const [flights, setFlights] = useState<FlightData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -119,10 +130,16 @@ const Home = () => {
     });
     setShowBookingWizard(false);
 
-    // Show booking confirmation
-    alert(
-      `Booking confirmed! Your flight ${selectedFlight?.flightNumber} from ${selectedFlight?.origin} to ${selectedFlight?.destination} has been booked.`,
-    );
+    // Instead of alert, set state to show confirmation dialog
+    setBookingDetails({
+      ...bookingData,
+      flightDetails: selectedFlight,
+    });
+    setShowConfirmation(true);
+  };
+
+  const closeConfirmation = () => {
+    setShowConfirmation(false);
   };
 
   return (
@@ -204,6 +221,50 @@ const Home = () => {
             />
           </section>
         )}
+
+        {/* Booking Confirmation Dialog */}
+        <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center text-green-600">
+                <CheckCircle className="mr-2 h-6 w-6" /> Booking Confirmed
+              </DialogTitle>
+              <DialogDescription>
+                Your flight has been successfully booked.
+              </DialogDescription>
+            </DialogHeader>
+            {bookingDetails && selectedFlight && (
+              <div className="py-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Flight Details:</p>
+                  <p className="text-sm">
+                    <span className="font-semibold">Flight Number:</span>{" "}
+                    {selectedFlight.flightNumber}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-semibold">From:</span>{" "}
+                    {selectedFlight.origin}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-semibold">To:</span>{" "}
+                    {selectedFlight.destination}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-semibold">Date:</span>{" "}
+                    {selectedFlight.departureDate}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-semibold">Time:</span>{" "}
+                    {selectedFlight.departureTime}
+                  </p>
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button onClick={closeConfirmation}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
