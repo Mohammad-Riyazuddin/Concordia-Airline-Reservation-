@@ -62,6 +62,20 @@ const FlightManagement = () => {
     airline: "",
     availableSeats: [],
   });
+
+  const [seats, setSeats] = useState<
+    Array<{
+      seatNumber: string;
+      class: "Economy" | "Business" | "First";
+      isOccupied: boolean;
+    }>
+  >([]);
+
+  const [newSeat, setNewSeat] = useState({
+    seatNumber: "",
+    class: "Economy" as "Economy" | "Business" | "First",
+    isOccupied: false,
+  });
   const navigate = useNavigate();
 
   // Fetch all flights on component mount
@@ -98,28 +112,52 @@ const FlightManagement = () => {
     });
   };
 
+  const handleSeatInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value, type } = e.target as HTMLInputElement;
+
+    if (type === "checkbox") {
+      const checked = (e.target as HTMLInputElement).checked;
+      setNewSeat({
+        ...newSeat,
+        [name]: checked,
+      });
+    } else {
+      setNewSeat({
+        ...newSeat,
+        [name]: value,
+      });
+    }
+  };
+
+  const addSeat = () => {
+    if (!newSeat.seatNumber) return;
+
+    setSeats([...seats, { ...newSeat }]);
+    setNewSeat({
+      seatNumber: "",
+      class: "Economy",
+      isOccupied: false,
+    });
+  };
+
+  const removeSeat = (index: number) => {
+    const updatedSeats = [...seats];
+    updatedSeats.splice(index, 1);
+    setSeats(updatedSeats);
+  };
+
   const handleAddFlight = async () => {
     try {
-      // Create a basic set of available seats
-      const seatRows = ["A", "B", "C", "D", "E", "F"];
-      const seatColumns = [1, 2, 3, 4, 5];
-      const availableSeats = [];
-
-      for (const row of seatRows) {
-        for (const col of seatColumns) {
-          availableSeats.push({
-            seatNumber: `${row}${col}`,
-            class: col <= 2 ? "First" : "Economy",
-            isOccupied: false,
-          });
-        }
-      }
-
+      // Use the manually added seats instead of generating them
       const flightData = {
         ...formData,
-        availableSeats,
+        availableSeats: seats,
         price: Number(formData.price),
       } as FlightData;
+
+      console.log("Sending flight data:", flightData);
 
       // Use fetch to make a direct POST request to the /flights endpoint
       const response = await fetch("http://localhost:3000/flights", {
@@ -237,6 +275,12 @@ const FlightManagement = () => {
       price: 0,
       airline: "",
       availableSeats: [],
+    });
+    setSeats([]);
+    setNewSeat({
+      seatNumber: "",
+      class: "Economy",
+      isOccupied: false,
     });
     setCurrentFlight(null);
   };
@@ -406,6 +450,118 @@ const FlightManagement = () => {
                 onChange={handleInputChange}
                 required
               />
+            </div>
+
+            {/* Seat Management Section */}
+            <div className="space-y-4 mt-4 border-t pt-4">
+              <h3 className="font-semibold">Seat Management</h3>
+
+              {/* Add New Seat Form */}
+              <div className="grid grid-cols-3 gap-3 items-end">
+                <div className="space-y-2">
+                  <Label htmlFor="seatNumber">Seat Number</Label>
+                  <Input
+                    id="seatNumber"
+                    name="seatNumber"
+                    value={newSeat.seatNumber}
+                    onChange={handleSeatInputChange}
+                    placeholder="E.g., A1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="class">Class</Label>
+                  <select
+                    id="class"
+                    name="class"
+                    value={newSeat.class}
+                    onChange={handleSeatInputChange}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="Economy">Economy</option>
+                    <option value="Business">Business</option>
+                    <option value="First">First</option>
+                  </select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isOccupied"
+                    name="isOccupied"
+                    checked={newSeat.isOccupied}
+                    onChange={handleSeatInputChange}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <Label htmlFor="isOccupied" className="text-sm">
+                    Occupied
+                  </Label>
+                  <Button
+                    type="button"
+                    onClick={addSeat}
+                    className="ml-auto"
+                    disabled={!newSeat.seatNumber}
+                  >
+                    Add Seat
+                  </Button>
+                </div>
+              </div>
+
+              {/* Seats List */}
+              {seats.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-2">
+                    Added Seats ({seats.length})
+                  </h4>
+                  <div className="border rounded-md overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Seat Number
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Class
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {seats.map((seat, index) => (
+                          <tr key={index}>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm">
+                              {seat.seatNumber}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm">
+                              {seat.class}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm">
+                              <span
+                                className={`inline-flex px-2 text-xs font-semibold rounded-full ${seat.isOccupied ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
+                              >
+                                {seat.isOccupied ? "Occupied" : "Available"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-right text-sm">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeSeat(index)}
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                              >
+                                Remove
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
