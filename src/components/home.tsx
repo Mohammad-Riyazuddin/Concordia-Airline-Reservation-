@@ -213,7 +213,11 @@ const Home = () => {
       doc.text("Payment Details", 20, 165);
 
       doc.setFontSize(12);
-      doc.text(`Transaction ID: ${bookingData.payment.transactionID}`, 25, 175);
+      doc.text(
+        `Transaction ID: ${bookingData.payment.transactionID || "N/A"}`,
+        25,
+        175,
+      );
       doc.text(
         `Amount Paid: ${bookingData.payment.paymentDetails.paymentAmount.toFixed(2)}`,
         25,
@@ -351,9 +355,14 @@ const Home = () => {
                     <p className="text-sm">{selectedFlight.destination}</p>
 
                     <p className="text-sm">
-                      <span className="font-semibold">Date:</span>
+                      <span className="font-semibold">Booking Date:</span>
                     </p>
-                    <p className="text-sm">{selectedFlight.departureDate}</p>
+                    <p className="text-sm">
+                      {bookingDetails.payment &&
+                        new Date(
+                          bookingDetails.payment.paymentDetails.date,
+                        ).toLocaleString()}
+                    </p>
 
                     <p className="text-sm">
                       <span className="font-semibold">Time:</span>
@@ -391,6 +400,13 @@ const Home = () => {
                           {bookingDetails.payment.paymentDetails.paymentAmount.toFixed(
                             2,
                           )}
+                        </p>
+
+                        <p className="text-sm">
+                          <span className="font-semibold">Transaction ID:</span>
+                        </p>
+                        <p className="text-sm">
+                          {bookingDetails.payment.transactionID}
                         </p>
                       </>
                     )}
