@@ -131,11 +131,22 @@ const Home = () => {
     });
     setShowBookingWizard(false);
 
-    // Instead of alert, set state to show confirmation dialog
-    setBookingDetails({
+    // Ensure transaction ID is properly set
+    const bookingWithTransaction = {
       ...bookingData,
       flightDetails: selectedFlight,
-    });
+      payment: bookingData.payment
+        ? {
+            ...bookingData.payment,
+            transactionID:
+              bookingData.payment.transactionID ||
+              `TX-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+          }
+        : null,
+    };
+
+    // Instead of alert, set state to show confirmation dialog
+    setBookingDetails(bookingWithTransaction);
     setShowConfirmation(true);
   };
 
@@ -213,11 +224,9 @@ const Home = () => {
       doc.text("Payment Details", 20, 165);
 
       doc.setFontSize(12);
-      doc.text(
-        `Transaction ID: ${bookingData.payment.transactionID || "N/A"}`,
-        25,
-        175,
-      );
+      // Ensure transactionID is properly accessed and displayed
+      const transactionID = bookingData.payment.transactionID || "N/A";
+      doc.text(`Transaction ID: ${transactionID}`, 25, 175);
       doc.text(
         `Amount Paid: ${bookingData.payment.paymentDetails.paymentAmount.toFixed(2)}`,
         25,
@@ -406,7 +415,7 @@ const Home = () => {
                           <span className="font-semibold">Transaction ID:</span>
                         </p>
                         <p className="text-sm">
-                          {bookingDetails.payment.transactionID}
+                          {bookingDetails.payment.transactionID || "N/A"}
                         </p>
                       </>
                     )}
