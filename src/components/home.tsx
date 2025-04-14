@@ -220,7 +220,7 @@ const Home = () => {
     // Add logo or header
     doc.setFontSize(16);
     doc.setTextColor(0, 0, 150);
-    doc.text("SkyWay Airlines", 105, 30, { align: "center" });
+    doc.text("Concordia Airlines", 105, 30, { align: "center" });
 
     // Add horizontal line
     doc.setDrawColor(200, 200, 200);
@@ -295,7 +295,7 @@ const Home = () => {
     // Footer
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text("Thank you for choosing SkyWay Airlines", 105, 280, {
+    doc.text("Thank you for choosing Concordia Airlines", 105, 280, {
       align: "center",
     });
 
@@ -307,7 +307,9 @@ const Home = () => {
     <div className="container mx-auto p-4 bg-white min-h-screen">
       <header className="mb-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-blue-600">SkyWay Airlines</h1>
+          <h1 className="text-3xl font-bold text-blue-600">
+            Concordia Airlines
+          </h1>
           <div className="flex items-center">
             {user ? (
               <div className="flex items-center space-x-4">
