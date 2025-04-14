@@ -62,7 +62,54 @@ const Home = () => {
         console.error("Error parsing user data:", error);
       }
     }
+
+    // Fetch flights by default when component mounts
+    fetchDefaultFlights();
   }, []);
+
+  // Function to fetch default flights
+  const fetchDefaultFlights = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:3000/flights");
+      if (!response.ok) {
+        throw new Error(`Failed to fetch flights: ${response.statusText}`);
+      }
+
+      const results = await response.json();
+      console.log("Default flights loaded:", results);
+
+      // Make sure results is an array
+      const flightArray = Array.isArray(results) ? results : [results];
+
+      // Fix the availableSeats issue if needed
+      const fixedFlights = flightArray.map((flight) => {
+        // Make sure availableSeats is properly formatted
+        if (flight.availableSeats) {
+          const fixedSeats = flight.availableSeats.map((seat) => {
+            // Fix swapped seatNumber and class if needed
+            if (seat.seatNumber === "Economy" && seat.class.startsWith("A")) {
+              return {
+                seatNumber: seat.class,
+                class: "Economy",
+                isOccupied: seat.isOccupied,
+              };
+            }
+            return seat;
+          });
+          return { ...flight, availableSeats: fixedSeats };
+        }
+        return flight;
+      });
+
+      setFlights(fixedFlights);
+      setShowResults(true);
+    } catch (error) {
+      console.error("Error fetching default flights:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
