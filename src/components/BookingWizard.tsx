@@ -569,7 +569,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
               {!isBookingInProgress && bookingResponse ? (
                 <>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
+                  <Button
                     onClick={handlePaymentSubmit}
                     disabled={
                       isPaymentInProgress ||
@@ -577,6 +577,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                       !paymentFormData.cvv ||
                       !paymentFormData.expiryDate
                     }
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {isPaymentInProgress ? (
                       <>
@@ -586,7 +587,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                     ) : (
                       "Make Payment"
                     )}
-                  </AlertDialogAction>
+                  </Button>
                 </>
               ) : (
                 <AlertDialogCancel>Close</AlertDialogCancel>
