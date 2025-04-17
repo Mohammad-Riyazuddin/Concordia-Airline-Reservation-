@@ -311,27 +311,27 @@ const MyBookings: React.FC = () => {
               </CardContent>
               <Separator />
               <CardFooter className="pt-4">
-                {booking.status === "confirmed" &&
-                  booking.departureDate &&
-                  new Date(booking.departureDate) > new Date() && (
-                    <Button
-                      variant="destructive"
-                      className="w-full"
-                      onClick={() => handleCancelBooking(booking.bookingId)}
-                    >
-                      Cancel
-                    </Button>
-                  )}
-                {booking.status === "confirmed" &&
-                  booking.departureDate &&
-                  new Date(booking.departureDate) <= new Date() && (
-                    <p className="text-sm text-gray-500 w-full text-center">
-                      This flight has already departed
-                    </p>
-                  )}
+                {booking.status === "confirmed" && (
+                  <>
+                    {booking.departureDate &&
+                    new Date(booking.departureDate) > new Date() ? (
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        onClick={() => handleCancelBooking(booking.bookingId)}
+                      >
+                        Cancel
+                      </Button>
+                    ) : (
+                      <p className="text-sm text-gray-500 w-full text-center">
+                        This flight has already departed
+                      </p>
+                    )}
+                  </>
+                )}
                 {booking.status === "pending" && (
                   <Button
-                    className="w-full"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
                     onClick={() => handleMakePayment(booking.bookingId)}
                   >
                     Make Payment
