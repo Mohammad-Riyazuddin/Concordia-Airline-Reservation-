@@ -319,7 +319,7 @@ const MyBookings: React.FC = () => {
                       className="w-full"
                       onClick={() => handleCancelBooking(booking.bookingId)}
                     >
-                      Cancel Booking
+                      Cancel
                     </Button>
                   )}
                 {booking.status === "confirmed" &&
