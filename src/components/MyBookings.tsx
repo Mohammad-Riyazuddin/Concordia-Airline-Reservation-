@@ -311,7 +311,7 @@ const MyBookings: React.FC = () => {
               </CardContent>
               <Separator />
               <CardFooter className="pt-4">
-                {booking.status === "confirmed" &&
+                {booking.status === "Confirmed" &&
                   booking.departureDate &&
                   new Date(booking.departureDate) > new Date() && (
                     <Button
