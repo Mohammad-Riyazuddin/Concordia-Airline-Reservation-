@@ -322,14 +322,14 @@ const MyBookings: React.FC = () => {
                       Cancel
                     </Button>
                   )}
-                {booking.status === "confirmed" &&
+                {booking.status === "Confirmed" &&
                   booking.departureDate &&
                   new Date(booking.departureDate) <= new Date() && (
                     <p className="text-sm text-gray-500 w-full text-center">
                       This flight has already departed
                     </p>
                   )}
-                {booking.status === "pending" && (
+                {booking.status === "Pending" && (
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => handleMakePayment(booking.bookingId)}
@@ -337,7 +337,7 @@ const MyBookings: React.FC = () => {
                     Make Payment
                   </Button>
                 )}
-                {booking.status === "cancelled" && (
+                {booking.status === "Cancelled" && (
                   <p className="text-sm text-gray-500 w-full text-center">
                     This booking has been cancelled
                   </p>
