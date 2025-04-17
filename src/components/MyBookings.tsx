@@ -88,7 +88,22 @@ const MyBookings: React.FC = () => {
       }
 
       const data = await response.json();
-      setBookings(data);
+      console.log("Bookings API response:", data);
+
+      // Process the API response to extract bookings array
+      if (data && data.bookings) {
+        // Filter out string entries and keep only booking objects
+        const processedBookings = data.bookings.filter(
+          (booking) =>
+            typeof booking === "object" &&
+            booking !== null &&
+            booking.bookingId,
+        );
+        console.log("Processed bookings:", processedBookings);
+        setBookings(processedBookings);
+      } else {
+        setBookings([]);
+      }
     } catch (err) {
       console.error("Error fetching bookings:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch bookings");
@@ -220,10 +235,14 @@ const MyBookings: React.FC = () => {
                     Flight {booking.flightNumber}
                   </CardTitle>
                   <div
-                    className="px-2 py-1 text-xs rounded-full font-medium
-                    ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
-                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-red-100 text-red-800'}"
+                    className={`px-2 py-1 text-xs rounded-full font-medium
+                    ${
+                      booking.status === "confirmed"
+                        ? "bg-green-100 text-green-800"
+                        : booking.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                    }`}
                   >
                     {booking.status.charAt(0).toUpperCase() +
                       booking.status.slice(1)}
