@@ -47,6 +47,7 @@ interface Booking {
   ticket: Ticket;
   status: "confirmed" | "pending" | "cancelled";
   bookingDate: string;
+  departureDate?: string; // Added departure date
   baggage: Baggage[];
 }
 
@@ -129,6 +130,7 @@ const MyBookings: React.FC = () => {
           },
           status: "confirmed",
           bookingDate: "2025-04-14T03:53:36.089Z",
+          departureDate: "2025-06-20T10:00:00.000Z", // Future date
           baggage: [],
         },
         {
@@ -150,6 +152,7 @@ const MyBookings: React.FC = () => {
           },
           status: "pending",
           bookingDate: "2025-04-15T03:53:36.089Z",
+          departureDate: "2025-05-25T14:30:00.000Z", // Future date
           baggage: [],
         },
         {
@@ -171,6 +174,29 @@ const MyBookings: React.FC = () => {
           },
           status: "cancelled",
           bookingDate: "2025-04-16T03:53:36.089Z",
+          departureDate: "2025-07-10T08:15:00.000Z", // Future date
+          baggage: [],
+        },
+        {
+          bookingId: "BK-1744602816089-7274",
+          flightNumber: "C1014",
+          seat: {
+            seatNumber: "D2",
+            class: "Economy",
+            isOccupied: false,
+          },
+          meal: {
+            mealType: "regular",
+          },
+          specialRequest: null,
+          ticket: {
+            ticketId: "TK-1744602816089-1872",
+            boardingPassUrl: "",
+            bookingRef: "BK-1744602816089-7274",
+          },
+          status: "confirmed",
+          bookingDate: "2025-04-17T03:53:36.089Z",
+          departureDate: "2025-04-01T11:45:00.000Z", // Past date
           baggage: [],
         },
       ]);
@@ -272,19 +298,37 @@ const MyBookings: React.FC = () => {
                       {new Date(booking.bookingDate).toLocaleDateString()}
                     </span>
                   </div>
+                  {booking.departureDate && (
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                      <span className="text-sm font-medium">Departure:</span>
+                      <span className="text-sm ml-2">
+                        {new Date(booking.departureDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
               <Separator />
               <CardFooter className="pt-4">
-                {booking.status === "confirmed" && (
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    onClick={() => handleCancelBooking(booking.bookingId)}
-                  >
-                    Cancel Booking
-                  </Button>
-                )}
+                {booking.status === "confirmed" &&
+                  booking.departureDate &&
+                  new Date(booking.departureDate) > new Date() && (
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      onClick={() => handleCancelBooking(booking.bookingId)}
+                    >
+                      Cancel Booking
+                    </Button>
+                  )}
+                {booking.status === "confirmed" &&
+                  booking.departureDate &&
+                  new Date(booking.departureDate) <= new Date() && (
+                    <p className="text-sm text-gray-500 w-full text-center">
+                      This flight has already departed
+                    </p>
+                  )}
                 {booking.status === "pending" && (
                   <Button
                     className="w-full"
