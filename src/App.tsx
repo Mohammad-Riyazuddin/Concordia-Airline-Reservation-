@@ -13,7 +13,9 @@ const MyBookings = lazy(() => import("./components/MyBookings"));
 
 // Simple auth check function
 const isAuthenticated = () => {
-  return localStorage.getItem("token") !== null;
+  const token = localStorage.getItem("token");
+  const user = localStorage.getItem("user");
+  return token !== null && user !== null;
 };
 
 // Check if user is an admin
@@ -38,14 +40,21 @@ const ProtectedRoute = ({
   element: JSX.Element;
   adminOnly?: boolean;
 }) => {
-  if (!isAuthenticated()) {
+  // Check if user is authenticated by verifying both token and user data exist
+  const authenticated = isAuthenticated();
+  console.log("Authentication status:", authenticated);
+
+  if (!authenticated) {
+    console.log("User not authenticated, redirecting to login");
     return <Navigate to="/auth" replace />;
   }
 
   if (adminOnly && !isAdmin()) {
+    console.log("User not admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
 
+  console.log("User authenticated, rendering protected content");
   return element;
 };
 
