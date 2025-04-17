@@ -13,9 +13,8 @@ const MyBookings = lazy(() => import("./components/MyBookings"));
 
 // Simple auth check function
 const isAuthenticated = () => {
-  const token = localStorage.getItem("token");
   const user = localStorage.getItem("user");
-  return token !== null && user !== null;
+  return user !== null;
 };
 
 // Check if user is an admin

@@ -1,9 +1,9 @@
 // This file is kept as a placeholder but JWT and bcrypt functions are removed
 // as the application is now frontend-only with API calls to a backend
 
-// Helper function to check if a user is authenticated based on localStorage token
+// Helper function to check if a user is authenticated based on localStorage user data
 export const isAuthenticated = () => {
-  return localStorage.getItem("token") !== null;
+  return localStorage.getItem("user") !== null;
 };
 
 // Helper function to check if a user is an admin

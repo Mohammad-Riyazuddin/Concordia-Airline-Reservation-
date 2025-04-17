@@ -80,7 +80,7 @@ const MyBookings: React.FC = () => {
 
       // Fetch bookings from API
       const response = await fetch(
-        `http://localhost:3000/${customerId}/bookings`,
+        `http://localhost:3000/customer/${customerId}/bookings`,
       );
 
       if (!response.ok) {

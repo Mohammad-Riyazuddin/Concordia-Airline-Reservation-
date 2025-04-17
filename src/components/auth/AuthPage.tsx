@@ -47,10 +47,8 @@ const AuthPage = () => {
 
       const userData = await response.json();
 
-      // Store user data and token in localStorage based on login type
+      // Store user data in localStorage based on login type
       if (loginType === "admin") {
-        localStorage.setItem("token", userData.token || "");
-
         // Handle the admin response format
         if (userData.admin) {
           const adminData = {
@@ -65,20 +63,13 @@ const AuthPage = () => {
         }
       } else {
         // For customer login with new response format
-        const customerData = {
-          ...userData.customer,
-          role: "customer", // Explicitly set role for customer
-          userId:
-            userData.customer?.userId ||
-            userData.customer?.id ||
-            userData.userId ||
-            userData.id, // Ensure we capture userId in any format
-        };
-        console.log("Storing customer data:", customerData);
-        localStorage.setItem("user", JSON.stringify(customerData));
-        // Also store userId separately for easier access
-        if (customerData.userId) {
-          localStorage.setItem("userId", customerData.userId);
+        if (userData.customer) {
+          const customerData = {
+            ...userData.customer,
+            role: "customer", // Explicitly set role for customer
+          };
+          console.log("Storing customer data:", customerData);
+          localStorage.setItem("user", JSON.stringify(customerData));
         }
       }
 
