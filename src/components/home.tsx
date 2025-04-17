@@ -324,6 +324,14 @@ const Home = () => {
                     Manage Flights
                   </Link>
                 )}
+                {user.role === "customer" && (
+                  <Link
+                    to="/my-bookings"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium ml-4"
+                  >
+                    My Bookings
+                  </Link>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

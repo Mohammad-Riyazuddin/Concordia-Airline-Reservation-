@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import React, { Suspense, lazy } from "react";
 import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/home";
 import AuthPage from "./components/auth/AuthPage";
@@ -9,6 +9,7 @@ const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
 const FlightManagement = lazy(
   () => import("./components/admin/FlightManagement"),
 );
+const MyBookings = lazy(() => import("./components/MyBookings"));
 
 // Simple auth check function
 const isAuthenticated = () => {
@@ -71,6 +72,12 @@ function App() {
             path="/admin/flights"
             element={
               <ProtectedRoute element={<FlightManagement />} adminOnly={true} />
+            }
+          />
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute element={<MyBookings />} adminOnly={false} />
             }
           />
           {import.meta.env.VITE_TEMPO === "true" && (
