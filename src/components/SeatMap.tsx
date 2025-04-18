@@ -26,7 +26,7 @@ const Seat = ({
   onSelect = () => {},
 }: SeatProps) => {
   const baseClasses =
-    "w-8 h-8 m-1 flex items-center justify-center rounded-lg transition-colors text-sm";
+    "w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-sm";
   const typeClasses = {
     economy: "bg-gray-100 hover:bg-gray-200",
     business: "bg-blue-100 hover:bg-blue-200",
@@ -115,11 +115,37 @@ const SeatMap = ({
     economy: seats.filter((seat) => seat.type === "economy"),
   };
 
-  // Calculate grid columns based on available seats
-  const getGridCols = (seatCount: number) => {
-    if (seatCount <= 3) return 3;
-    if (seatCount <= 6) return 6;
-    return 6; // Default to 6 columns max
+  // Group seats by row for better organization
+  const groupSeatsByRow = (
+    seats: Array<{
+      id: string;
+      number: string;
+      type: "economy" | "business" | "first";
+      isOccupied: boolean;
+    }>,
+  ) => {
+    // Extract row numbers from seat IDs (assuming format like "1A", "2B", etc.)
+    const rows: Record<string, typeof seats> = {};
+
+    seats.forEach((seat) => {
+      // Extract the row identifier (number part) from the seat number
+      const rowId = seat.number.match(/^\d+/)?.[0] || "";
+      if (!rows[rowId]) {
+        rows[rowId] = [];
+      }
+      rows[rowId].push(seat);
+    });
+
+    // Sort seats within each row by column letter
+    Object.keys(rows).forEach((rowId) => {
+      rows[rowId].sort((a, b) => {
+        const colA = a.number.replace(/^\d+/, "");
+        const colB = b.number.replace(/^\d+/, "");
+        return colA.localeCompare(colB);
+      });
+    });
+
+    return rows;
   };
 
   return (
@@ -155,17 +181,27 @@ const SeatMap = ({
               <h3 className="text-sm font-medium mb-2 text-purple-700">
                 First Class
               </h3>
-              <div
-                className={`grid grid-cols-${getGridCols(seatsByType.first.length)} gap-1 max-w-md mx-auto`}
-              >
-                {seatsByType.first.map((seat) => (
-                  <Seat
-                    key={seat.id}
-                    {...seat}
-                    isSelected={selectedSeatId === seat.id}
-                    onSelect={onSeatSelect}
-                  />
-                ))}
+              <div className="max-w-md mx-auto">
+                {Object.entries(groupSeatsByRow(seatsByType.first)).map(
+                  ([rowId, rowSeats]) => (
+                    <div
+                      key={`first-row-${rowId}`}
+                      className="flex justify-center gap-1 mb-1"
+                    >
+                      <div className="w-6 flex items-center justify-center text-xs text-gray-500">
+                        {rowId}
+                      </div>
+                      {rowSeats.map((seat) => (
+                        <Seat
+                          key={seat.id}
+                          {...seat}
+                          isSelected={selectedSeatId === seat.id}
+                          onSelect={onSeatSelect}
+                        />
+                      ))}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           )}
@@ -176,17 +212,27 @@ const SeatMap = ({
               <h3 className="text-sm font-medium mb-2 text-blue-700">
                 Business Class
               </h3>
-              <div
-                className={`grid grid-cols-${getGridCols(seatsByType.business.length)} gap-1 max-w-md mx-auto`}
-              >
-                {seatsByType.business.map((seat) => (
-                  <Seat
-                    key={seat.id}
-                    {...seat}
-                    isSelected={selectedSeatId === seat.id}
-                    onSelect={onSeatSelect}
-                  />
-                ))}
+              <div className="max-w-md mx-auto">
+                {Object.entries(groupSeatsByRow(seatsByType.business)).map(
+                  ([rowId, rowSeats]) => (
+                    <div
+                      key={`business-row-${rowId}`}
+                      className="flex justify-center gap-1 mb-1"
+                    >
+                      <div className="w-6 flex items-center justify-center text-xs text-gray-500">
+                        {rowId}
+                      </div>
+                      {rowSeats.map((seat) => (
+                        <Seat
+                          key={seat.id}
+                          {...seat}
+                          isSelected={selectedSeatId === seat.id}
+                          onSelect={onSeatSelect}
+                        />
+                      ))}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           )}
@@ -197,17 +243,27 @@ const SeatMap = ({
               <h3 className="text-sm font-medium mb-2 text-gray-700">
                 Economy Class
               </h3>
-              <div
-                className={`grid grid-cols-${getGridCols(seatsByType.economy.length)} gap-1 max-w-md mx-auto`}
-              >
-                {seatsByType.economy.map((seat) => (
-                  <Seat
-                    key={seat.id}
-                    {...seat}
-                    isSelected={selectedSeatId === seat.id}
-                    onSelect={onSeatSelect}
-                  />
-                ))}
+              <div className="max-w-md mx-auto">
+                {Object.entries(groupSeatsByRow(seatsByType.economy)).map(
+                  ([rowId, rowSeats]) => (
+                    <div
+                      key={`economy-row-${rowId}`}
+                      className="flex justify-center gap-1 mb-1"
+                    >
+                      <div className="w-6 flex items-center justify-center text-xs text-gray-500">
+                        {rowId}
+                      </div>
+                      {rowSeats.map((seat) => (
+                        <Seat
+                          key={seat.id}
+                          {...seat}
+                          isSelected={selectedSeatId === seat.id}
+                          onSelect={onSeatSelect}
+                        />
+                      ))}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           )}
