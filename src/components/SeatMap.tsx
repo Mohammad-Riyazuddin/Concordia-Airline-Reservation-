@@ -175,98 +175,92 @@ const SeatMap = ({
       <div className="relative w-full bg-gray-50 rounded-lg p-4">
         {/* Airplane outline */}
         <div className="relative border-2 border-gray-300 rounded-t-3xl p-4">
-          {/* First Class Section */}
-          {seatsByType.first.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-sm font-medium mb-2 text-purple-700">
-                First Class
-              </h3>
-              <div className="max-w-md mx-auto">
+          {/* All seats arranged in rows of 6 */}
+          <div className="max-w-md mx-auto">
+            {/* First Class Rows */}
+            {seatsByType.first.length > 0 && (
+              <div className="mb-6">
                 {Object.entries(groupSeatsByRow(seatsByType.first)).map(
                   ([rowId, rowSeats]) => (
                     <div
                       key={`first-row-${rowId}`}
-                      className="flex justify-center gap-1 mb-1"
+                      className="flex justify-center gap-2 mb-3"
                     >
                       <div className="w-6 flex items-center justify-center text-xs text-gray-500">
                         {rowId}
                       </div>
-                      {rowSeats.map((seat) => (
-                        <Seat
-                          key={seat.id}
-                          {...seat}
-                          isSelected={selectedSeatId === seat.id}
-                          onSelect={onSeatSelect}
-                        />
-                      ))}
+                      <div className="grid grid-cols-6 gap-2">
+                        {rowSeats.map((seat) => (
+                          <Seat
+                            key={seat.id}
+                            {...seat}
+                            isSelected={selectedSeatId === seat.id}
+                            onSelect={onSeatSelect}
+                          />
+                        ))}
+                      </div>
                     </div>
                   ),
                 )}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Business Class Section */}
-          {seatsByType.business.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-sm font-medium mb-2 text-blue-700">
-                Business Class
-              </h3>
-              <div className="max-w-md mx-auto">
+            {/* Business Class Rows */}
+            {seatsByType.business.length > 0 && (
+              <div className="mb-6">
                 {Object.entries(groupSeatsByRow(seatsByType.business)).map(
                   ([rowId, rowSeats]) => (
                     <div
                       key={`business-row-${rowId}`}
-                      className="flex justify-center gap-1 mb-1"
+                      className="flex justify-center gap-2 mb-3"
                     >
                       <div className="w-6 flex items-center justify-center text-xs text-gray-500">
                         {rowId}
                       </div>
-                      {rowSeats.map((seat) => (
-                        <Seat
-                          key={seat.id}
-                          {...seat}
-                          isSelected={selectedSeatId === seat.id}
-                          onSelect={onSeatSelect}
-                        />
-                      ))}
+                      <div className="grid grid-cols-6 gap-2">
+                        {rowSeats.map((seat) => (
+                          <Seat
+                            key={seat.id}
+                            {...seat}
+                            isSelected={selectedSeatId === seat.id}
+                            onSelect={onSeatSelect}
+                          />
+                        ))}
+                      </div>
                     </div>
                   ),
                 )}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Economy Class Section */}
-          {seatsByType.economy.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-2 text-gray-700">
-                Economy Class
-              </h3>
-              <div className="max-w-md mx-auto">
+            {/* Economy Class Rows */}
+            {seatsByType.economy.length > 0 && (
+              <div>
                 {Object.entries(groupSeatsByRow(seatsByType.economy)).map(
                   ([rowId, rowSeats]) => (
                     <div
                       key={`economy-row-${rowId}`}
-                      className="flex justify-center gap-1 mb-1"
+                      className="flex justify-center gap-2 mb-3"
                     >
                       <div className="w-6 flex items-center justify-center text-xs text-gray-500">
                         {rowId}
                       </div>
-                      {rowSeats.map((seat) => (
-                        <Seat
-                          key={seat.id}
-                          {...seat}
-                          isSelected={selectedSeatId === seat.id}
-                          onSelect={onSeatSelect}
-                        />
-                      ))}
+                      <div className="grid grid-cols-6 gap-2">
+                        {rowSeats.map((seat) => (
+                          <Seat
+                            key={seat.id}
+                            {...seat}
+                            isSelected={selectedSeatId === seat.id}
+                            onSelect={onSeatSelect}
+                          />
+                        ))}
+                      </div>
                     </div>
                   ),
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
