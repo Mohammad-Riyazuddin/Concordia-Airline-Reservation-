@@ -9,7 +9,15 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Separator } from "./ui/separator";
-import { ArrowLeft, Calendar, MapPin, Ticket } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Ticket, CheckCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "./ui/dialog";
 
 interface Baggage {
   type: string;
@@ -55,6 +63,9 @@ const MyBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCancellationDialog, setShowCancellationDialog] =
+    useState<boolean>(false);
+  const [cancellationDetails, setCancellationDetails] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -206,8 +217,50 @@ const MyBookings: React.FC = () => {
   };
 
   const handleCancelBooking = async (bookingId: string) => {
-    // Implementation for cancel booking will be added later
-    console.log("Cancel booking:", bookingId);
+    try {
+      // Get user data from localStorage
+      const userData = localStorage.getItem("user");
+      if (!userData) {
+        throw new Error("User not logged in");
+      }
+
+      const user = JSON.parse(userData);
+      const customerId = user.userId;
+
+      if (!customerId) {
+        throw new Error("Customer ID not found");
+      }
+
+      // Call the cancel booking API
+      const response = await fetch(
+        `http://localhost:3000/customer/${customerId}/booking/${bookingId}/cancel`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to cancel booking: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Cancellation response:", data);
+
+      // Show cancellation details
+      setCancellationDetails(data);
+      setShowCancellationDialog(true);
+
+      // Refresh bookings list
+      fetchBookings();
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to cancel booking",
+      );
+    }
   };
 
   const handleMakePayment = async (bookingId: string) => {
@@ -311,25 +364,27 @@ const MyBookings: React.FC = () => {
               </CardContent>
               <Separator />
               <CardFooter className="pt-4">
-                {booking.status === "Confirmed" &&
+                {booking.status === "confirmed" &&
                   booking.departureDate &&
                   new Date(booking.departureDate) > new Date() && (
                     <Button
                       variant="destructive"
                       className="w-full"
-                      onClick={() => handleCancelBooking(booking.bookingId)}
+                      onClick={() =>
+                        handleCancelBooking(booking.ticket.bookingRef)
+                      }
                     >
                       Cancel
                     </Button>
                   )}
-                {booking.status === "Confirmed" &&
+                {booking.status === "confirmed" &&
                   booking.departureDate &&
                   new Date(booking.departureDate) <= new Date() && (
                     <p className="text-sm text-gray-500 w-full text-center">
                       This flight has already departed
                     </p>
                   )}
-                {booking.status === "Pending" && (
+                {booking.status === "pending" && (
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => handleMakePayment(booking.bookingId)}
@@ -337,7 +392,7 @@ const MyBookings: React.FC = () => {
                     Make Payment
                   </Button>
                 )}
-                {booking.status === "Cancelled" && (
+                {booking.status === "cancelled" && (
                   <p className="text-sm text-gray-500 w-full text-center">
                     This booking has been cancelled
                   </p>
@@ -347,6 +402,111 @@ const MyBookings: React.FC = () => {
           ))}
         </div>
       </main>
+
+      {/* Cancellation Confirmation Dialog */}
+      {cancellationDetails && (
+        <Dialog
+          open={showCancellationDialog}
+          onOpenChange={setShowCancellationDialog}
+        >
+          <DialogContent className="sm:max-w-md bg-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center text-green-600">
+                <CheckCircle className="mr-2 h-6 w-6" /> Booking Cancelled
+              </DialogTitle>
+              <DialogDescription>
+                Your booking has been successfully cancelled.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium text-gray-700 border-b pb-2">
+                  Cancellation Details:
+                </p>
+                <div className="grid grid-cols-2 gap-y-2">
+                  <p className="text-sm">
+                    <span className="font-semibold">Booking ID:</span>
+                  </p>
+                  <p className="text-sm">
+                    {cancellationDetails.cancellation?.bookingId}
+                  </p>
+
+                  <p className="text-sm">
+                    <span className="font-semibold">Flight Number:</span>
+                  </p>
+                  <p className="text-sm">
+                    {cancellationDetails.cancellation?.flightNumber}
+                  </p>
+
+                  <p className="text-sm">
+                    <span className="font-semibold">Cancellation Date:</span>
+                  </p>
+                  <p className="text-sm">
+                    {cancellationDetails.cancellation?.cancellationDate &&
+                      new Date(
+                        cancellationDetails.cancellation.cancellationDate,
+                      ).toLocaleString()}
+                  </p>
+                </div>
+
+                {cancellationDetails.refund && (
+                  <>
+                    <p className="text-sm font-medium text-gray-700 border-b pb-2 mt-4">
+                      Refund Details:
+                    </p>
+                    <div className="grid grid-cols-2 gap-y-2">
+                      <p className="text-sm">
+                        <span className="font-semibold">Refund ID:</span>
+                      </p>
+                      <p className="text-sm">
+                        {cancellationDetails.refund.refundId}
+                      </p>
+
+                      <p className="text-sm">
+                        <span className="font-semibold">Amount:</span>
+                      </p>
+                      <p className="text-sm">
+                        ${cancellationDetails.refund.amount.toFixed(2)}
+                      </p>
+
+                      <p className="text-sm">
+                        <span className="font-semibold">Status:</span>
+                      </p>
+                      <p className="text-sm">
+                        <span className="px-2 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-800">
+                          {cancellationDetails.refund.status}
+                        </span>
+                      </p>
+
+                      <p className="text-sm">
+                        <span className="font-semibold">Request Date:</span>
+                      </p>
+                      <p className="text-sm">
+                        {cancellationDetails.refund.requestDate &&
+                          new Date(
+                            cancellationDetails.refund.requestDate,
+                          ).toLocaleString()}
+                      </p>
+
+                      <p className="text-sm">
+                        <span className="font-semibold">Reason:</span>
+                      </p>
+                      <p className="text-sm">
+                        {cancellationDetails.refund.reason}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setShowCancellationDialog(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
